@@ -78,6 +78,7 @@ class LicenciasListView(PersonalListView):
     permission_required = 'qliksense.view_tipolicencia'
     template_name = 'qliksense/list.html'
     model = TipoLicencia
+    ordering = ['descripcion']
     extra_context = {
         'title': _('Licencias'),
         'campos': {
@@ -99,17 +100,12 @@ class LicenciasListView(PersonalListView):
         },
     }
 
-    def get_context_data(self):
-        context = super().get_context_data()
-        print(context)
-        return context
-
 class LicenciasCreateView(PersonalCreateView):
-    permission_required = 'qliksense.view_tipolicencia'
+    permission_required = 'qliksense.add_tipolicencia'
     template_name = 'qliksense/forms.html'
     model = TipoLicencia
     fields = ['descripcion', 'cantidad']
-    #success_url = reverse_lazy('qliksense:list_licencia')
+    success_url = reverse_lazy('qliksense:list_licencia')
     extra_context = {
         'title': _('Nuevo tipo de licencia'),
         'opciones': DISPLAYS['forms'],
@@ -120,7 +116,7 @@ class LicenciasDetailView(PersonalDetailView):
     template_name = 'qliksense/detail.html'
     model = TipoLicencia
     extra_context = {
-        'title': _('Tipo:'),
+        'title': _('Tipo'),
         'campos': {
             'opciones': _('Opciones'),
             'lista': [
@@ -152,7 +148,7 @@ class LicenciasUpdateView(PersonalUpdateView):
     }
 
     def get_success_url(self):
-        return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.object.id})
+        return self.object.url_detail()
 
 class LicenciasDeleteView(PersonalDeleteView):
     permission_required = 'qliksense.delete_tipolicencia'
@@ -166,3 +162,81 @@ class LicenciasDeleteView(PersonalDeleteView):
     }
 
 
+class AreaListView(PersonalListView):
+    permission_required = 'qliksense.view_area'
+    template_name = 'qliksense/list.html'
+    model = Area
+    ordering = ['nombre']
+    extra_context = {
+        'title': _('Areas'),
+        'campos': {
+            #-1: no enumera
+            # 0: inicia numeración en 0
+            # 1: inicia numeración en 1
+            'enumerar': 1,
+            # Si hay valor se muestra opciones por linea, de lo contrario no se muestran
+            'opciones': _('Opciones'),
+            # Lista de campos que se deben mostrar en la tabla
+            'lista': [
+                'nombre', 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+        'mensaje': {
+            'vacio': _('No hay elementos para mostrar.'),
+        },
+    }
+
+class AreaCreateView(PersonalCreateView):
+    permission_required = 'qliksense.add_area'
+    template_name = 'qliksense/forms.html'
+    model = Area
+    fields = ['nombre']
+    #success_url = reverse_lazy('qliksense:view_area')
+    extra_context = {
+        'title': _('Area/Gerencia'),
+        'opciones': DISPLAYS['forms'],
+    }
+
+    def get_success_url(self):
+        return self.object.url_detail()
+
+class AreaDetailView(PersonalDetailView):
+    permission_required = 'qliksense.view_area'
+    template_name = 'qliksense/detail.html'
+    model = Area
+    extra_context = {
+        'title': _('Area / Gerencia'),
+        'campos': {
+            'opciones': _('Opciones'),
+            'lista': [
+                'nombre' 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+    }
+
+class AreaUpdateView(PersonalUpdateView):
+    permission_required = 'qliksense.change_area'
+    template_name = 'qliksense/forms.html'
+    model = Area
+    #success_url = reverse_lazy('qliksense:list_licencia')
+    fields = ['nombre']
+    extra_context = {
+        'title': _('Modificar área / gerencia'),
+        'opciones': DISPLAYS['forms'],
+    }
+
+    def get_success_url(self):
+        return self.object.url_detail()
+
+class AreaDeleteView(PersonalDeleteView):
+    permission_required = 'qliksense.delete_area'
+    template_name = 'qliksense/delete_confirmation.html'
+    model = Area
+    success_url = reverse_lazy('qliksense:list_area')
+    extra_context = {
+        'title': _('Eliminar area / gerencia'),
+        'confirmacion': DISPLAYS['confirmacion'],
+        'opciones': DISPLAYS['delete_form'],
+    }

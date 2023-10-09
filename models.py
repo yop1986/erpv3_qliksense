@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.utils.translation import gettext as _
+from django.urls import reverse_lazy
 
 
 class TipoLicencia(models.Model):
@@ -22,6 +23,15 @@ class TipoLicencia(models.Model):
     def licencias_no_asignadas(self):
         return self.cantidad - self.licencias_asignadas()
 
+    def url_detail(self):
+        return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.id})
+
+    def url_update(self):
+        return reverse_lazy('qliksense:update_licencia', kwargs={'pk': self.id})
+
+    def url_delete(self):
+        return reverse_lazy('qliksense:delete_licencia', kwargs={'pk': self.id})
+
 
 class Area(models.Model):
     '''
@@ -32,6 +42,15 @@ class Area(models.Model):
 
     def __str__(self):
         return f'{self.nombre}'
+
+    def url_detail(self):
+        return reverse_lazy('qliksense:detail_area', kwargs={'pk': self.id})
+
+    def url_update(self):
+        return reverse_lazy('qliksense:update_area', kwargs={'pk': self.id})
+
+    def url_delete(self):
+        return reverse_lazy('qliksense:delete_area', kwargs={'pk': self.id})
 
 
 class Area_TipoLicencia(models.Model):
