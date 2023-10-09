@@ -80,7 +80,7 @@ class LicenciasListView(PersonalListView):
             # 0: inicia numeración en 0
             # 1: inicia numeración en 1
             'enumerar': 1,
-            # Si se muestra o no las opciones por linea
+            # Si hay valor se muestra opciones por linea, de lo contrario no se muestran
             'opciones': _('Opciones'),
             # Lista de campos que se deben mostrar en la tabla
             'lista': [
@@ -114,7 +114,15 @@ class LicenciasDetailView(PersonalDetailView):
     pass
 
 class LicenciasUpdateView(PersonalUpdateView):
-    pass
+    permission_required = 'qliksense.change_tipolicencia'
+    template_name = 'qliksense/forms.html'
+    model = TipoLicencia
+    fields = ['descripcion', 'cantidad']
+    success_url = reverse_lazy('qliksense:detail_licencia')
+    extra_context = {
+        'title': _('Modificar tipo de licencia'),
+        'opciones': DISPLAYS['forms'],
+    }
 
 class LicenciasDeleteView(PersonalDeleteView):
     pass
