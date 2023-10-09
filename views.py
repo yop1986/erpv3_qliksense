@@ -3,13 +3,19 @@ from django.views.generic.base import TemplateView
 from django.utils.translation import gettext as _
 
 from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
-    PersonalListView, PersonalDetailView, PersonalDeleteView)
+    PersonalListView, PersonalDetailView, PersonalDeleteView,
+    Configuraciones)
+
+gConfiguracion = Configuraciones()
 
 class IndexTemplateView(TemplateView):
     template_name = 'qliksense/index.html'
 
     extra_context ={
         'title': _('Qlik Sense'),
+        'general': {
+            'nombre_sitio': gConfiguracion.get_value('sitio', 'nombre'),
+        },
         'elementos': [
             {
                 'display':  _('Licencias'),
