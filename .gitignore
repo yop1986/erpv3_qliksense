@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+README.html
 
 # C extensions
 *.so
@@ -16,6 +17,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+migrations/
 parts/
 sdist/
 var/
