@@ -5,7 +5,7 @@ from django.db.models.constraints import UniqueConstraint
 from django.utils.translation import gettext as _
 
 
-class TipoLicencias(models.Model):
+class TipoLicencia(models.Model):
     '''
         Tipo de licencias contratadas para hacer uso de la herramienta.
     '''
@@ -42,7 +42,7 @@ class Area_TipoLicencia(models.Model):
     cantidad    = models.PositiveSmallIntegerField(verbose_name=_('Cantidad'))
     vigente     = models.BooleanField(_('Estado'), default=True)
 
-    tipo        = models.ForeignKey(TipoLicencias, on_delete = models.RESTRICT)
+    tipo        = models.ForeignKey(TipoLicencia, on_delete = models.RESTRICT)
     area        = models.ForeignKey(Area, on_delete = models.RESTRICT)
 
     class Meta:
