@@ -30,7 +30,8 @@ class IndexTemplateView(TemplateView):
             {
                 'display':  _('Permisos por Stream'),
                 'desc':     _('Gestión general de los permisos a cada uno de \
-                    los usuarios por stream.'),                'iagen':   _('qs_permisos_stream.png'),
+                    los usuarios por stream.'),
+                'imagen':   _('qs_permisos_stream.png'),
             },            {                'display':  _('Stream'),
                 'desc':     _('Listado de streams definidios en la aplciación \
                     (generado de forma automático al conectarse con la api de \
