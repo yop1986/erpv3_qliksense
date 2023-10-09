@@ -1,0 +1,16 @@
+{% extends 'base_qliksense.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <form method="post">
+      {% csrf_token %}
+      
+      {{ form|crispy }}
+      <p>{{ confirmacion }} ({{ object }})</p>
+      <input type="submit" value="{{ opciones.submit }}" name="" class="btn btn-danger">
+    </form>
+{% endblock %}

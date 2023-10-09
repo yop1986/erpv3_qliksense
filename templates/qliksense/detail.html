@@ -1,0 +1,47 @@
+{% extends 'base_qliksense.html' %}
+{% load static fields_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }} {{ object }}</h1>
+
+    <div class="container">
+    {% for campo in campos.lista %}
+      <div class="row">
+        <div class="col">
+          <strong>{% get_verbose_field_name object campo %}</strong>
+        </div>
+        <div class="col">
+          {% get_object_value object campo %}
+        </div>
+      </div>
+    {% endfor %}
+
+    {% for campo in campos_adicionales %}
+      <div class="row">
+        <div class="col">
+          <strong>{{ campo.display }}</strong>
+        </div>
+        <div class="col"> {{ campo.valor }}</div>
+      </div>
+    {% endfor %}
+
+    {% if campos.opciones %}
+      <div class="row">
+        <div class="col">
+          <strong>{{ campos.opciones }}</strong>
+        </div>
+
+        <div class="col">
+            <a href="{% url 'qliksense:update_licencia' object.id %}" class="btn btn-primary">
+              <img src="{% static 'images/qs_update.png' %}" alt={{ opciones.update }} height="25px">
+            </a>
+            <a href="{% url 'qliksense:delete_licencia' object.id %}" class="btn btn-danger">
+              <img src="{% static 'images/qs_delete.png' %}" alt={{ opciones.delete }} height="25px">
+            </a>
+        </div>
+          {% endif %}
+    </div>
+
+{% endblock %}

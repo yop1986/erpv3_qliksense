@@ -7,7 +7,7 @@ from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     PersonalListView, PersonalDetailView, PersonalDeleteView,
     Configuraciones)
 
-from .models import TipoLicencia
+from .models import TipoLicencia, Area
 
 gConfiguracion = Configuraciones()
 DISPLAYS = {
@@ -15,11 +15,16 @@ DISPLAYS = {
         'submit': _('Guardar'),
         'cancel': _('Cancelar'),
     },
+    'delete_form': {
+        'submit': _('Eliminar'),
+        'cancel': _('Cancelar'),
+    },
     'opciones': {
         'detail': _('Ver'),
         'update': _('Editar'),
         'delete': _('Eliminar'),
-    }
+    },
+    'confirmacion': _('¿Esta seguro de eliminar el elemento indicado?')
 }
 
 
@@ -70,8 +75,8 @@ class IndexTemplateView(TemplateView):
 
 
 class LicenciasListView(PersonalListView):
-    permission_required = 'qliksense.view_tipolicencias'
-    template_name = 'qliksense/lists.html'
+    permission_required = 'qliksense.view_tipolicencia'
+    template_name = 'qliksense/list.html'
     model = TipoLicencia
     extra_context = {
         'title': _('Licencias'),
@@ -100,29 +105,64 @@ class LicenciasListView(PersonalListView):
         return context
 
 class LicenciasCreateView(PersonalCreateView):
-    permission_required = 'qliksense.view_tipolicencias'
+    permission_required = 'qliksense.view_tipolicencia'
     template_name = 'qliksense/forms.html'
     model = TipoLicencia
     fields = ['descripcion', 'cantidad']
-    success_url = reverse_lazy('qliksense:list_licencia')
+    #success_url = reverse_lazy('qliksense:list_licencia')
     extra_context = {
         'title': _('Nuevo tipo de licencia'),
         'opciones': DISPLAYS['forms'],
     }
 
 class LicenciasDetailView(PersonalDetailView):
-    pass
+    permission_required = 'qliksense.view_tipolicencia'
+    template_name = 'qliksense/detail.html'
+    model = TipoLicencia
+    extra_context = {
+        'title': _('Tipo:'),
+        'campos': {
+            'opciones': _('Opciones'),
+            'lista': [
+                #'id',
+                'descripcion', 
+                'cantidad', 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['campos_adicionales'] = [ 
+            {'display': _('Licencias asignadas'), 'valor': self.object.licencias_asignadas()},
+            {'display': _('Licencias pendientes'), 'valor': self.object.licencias_no_asignadas()},
+        ]
+        return context
 
 class LicenciasUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_tipolicencia'
     template_name = 'qliksense/forms.html'
     model = TipoLicencia
+    #success_url = reverse_lazy('qliksense:list_licencia')
     fields = ['descripcion', 'cantidad']
-    success_url = reverse_lazy('qliksense:detail_licencia')
     extra_context = {
         'title': _('Modificar tipo de licencia'),
         'opciones': DISPLAYS['forms'],
     }
 
+    def get_success_url(self):
+        return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.object.id})
+
 class LicenciasDeleteView(PersonalDeleteView):
-    pass
+    permission_required = 'qliksense.delete_tipolicencia'
+    template_name = 'qliksense/delete_confirmation.html'
+    model = TipoLicencia
+    success_url = reverse_lazy('qliksense:list_licencia')
+    extra_context = {
+        'title': _('Eliminar tipo de licencia'),
+        'confirmacion': DISPLAYS['confirmacion'],
+        'opciones': DISPLAYS['delete_form'],
+    }
+
+
