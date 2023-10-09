@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+<!-- Navbar -->
+{% block navbar_seccion_final %}
+
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    {% translate "Catalogos" %}
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{% url 'qliksense:list_licencia' %}">{% translate "Tipo de licencias" %}</a></li>
+    <li><a class="dropdown-item" href="{% url 'qliksense:create_licencia' %}">{% translate "Nuevo tipo de licencias" %}</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="#">{% translate "Áreas responsables" %}</a></li>
+    <li><a class="dropdown-item" href="#">{% translate "Nueva Área" %}</a></li>
+  </ul>
+</li>
+
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    {% translate "Usuarios" %}
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="#">Listar</a></li>
+    <li><a class="dropdown-item" href="#">Nuevo Usuario</a></li>
+  </ul>
+</li>
+{% endblock %}
+<!-- Navbar -->
+
+
