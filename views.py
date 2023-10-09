@@ -1,12 +1,27 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.utils.translation import gettext as _
+from django.urls import reverse_lazy
 
 from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     PersonalListView, PersonalDetailView, PersonalDeleteView,
     Configuraciones)
 
+from .models import TipoLicencia
+
 gConfiguracion = Configuraciones()
+DISPLAYS = {
+    'forms': {
+        'submit': _('Guardar'),
+        'cancel': _('Cancelar'),
+    },
+    'opciones': {
+        'detail': _('Ver'),
+        'update': _('Editar'),
+        'delete': _('Eliminar'),
+    }
+}
+
 
 class IndexTemplateView(TemplateView):
     template_name = 'qliksense/index.html'
@@ -55,15 +70,50 @@ class IndexTemplateView(TemplateView):
 
 
 class LicenciasListView(PersonalListView):
-    pass
+    permission_required = 'qliksense.view_tipolicencias'
+    template_name = 'qliksense/lists.html'
+    model = TipoLicencia
+    extra_context = {
+        'title': _('Licencias'),
+        'campos': {
+            #-1: no enumera
+            # 0: inicia numeración en 0
+            # 1: inicia numeración en 1
+            'enumerar': 1,
+            # Si se muestra o no las opciones por linea
+            'opciones': _('Opciones'),
+            # Lista de campos que se deben mostrar en la tabla
+            'lista': [
+                'descripcion', 
+                'cantidad', 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+        'mensaje': {
+            'vacio': _('No hay elementos para mostrar.'),
+        },
+    }
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        print(context)
+        return context
 
 class LicenciasCreateView(PersonalCreateView):
+    permission_required = 'qliksense.view_tipolicencias'
+    template_name = 'qliksense/forms.html'
+    model = TipoLicencia
+    fields = ['descripcion', 'cantidad']
+    success_url = reverse_lazy('qliksense:list_licencia')
+    extra_context = {
+        'title': _('Nuevo tipo de licencia'),
+        'opciones': DISPLAYS['forms'],
+    }
+
+class LicenciasDetailView(PersonalDetailView):
     pass
 
 class LicenciasUpdateView(PersonalUpdateView):
-    pass
-
-class LicenciasDetailView(PersonalDetailView):
     pass
 
 class LicenciasDeleteView(PersonalDeleteView):

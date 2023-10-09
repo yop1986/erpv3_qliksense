@@ -10,11 +10,11 @@ class TipoLicencia(models.Model):
         Tipo de licencias contratadas para hacer uso de la herramienta.
     '''
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    descipcion  = models.CharField(_('Descripción'), max_length = 120, unique = True)
+    descripcion = models.CharField(_('Descripción'), max_length = 120, unique = True)
     cantidad    = models.PositiveSmallIntegerField(verbose_name = _('Cantidad'))
 
     def __str__(self):
-        return self.descipcion
+        return self.descripcion
 
     def licencias_asignadas(self):
         return Area_TipoLicencia.objects.filter(tipo=self, vigente=True).count()

@@ -1,0 +1,68 @@
+{% extends 'base_qliksense.html' %}
+{% load static fields_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    {% if object_list %}
+    <table class="table">
+      <thead>
+        <tr>
+          {% if campos.enumerar > -1 %}
+          <th scope="col">#</th>
+          {% endif %}
+
+          {% for campo in campos.lista %}
+          <th scope="col">{% get_verbose_field_name object_list.0 campo %}</th>
+          {% endfor %}
+
+          {% if campos.opciones %}
+          <th scope="col">{{ campos.opciones }}</th>
+          {% endif %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for object in object_list %}
+        <tr>
+          {% if campos.enumerar > -1 %}
+          <th scope="row">
+            {% if campos.enumerar == 0 %}
+              {{ forloop.counter0 }}
+            {% else %}
+              {{ forloop.counter }}
+            {% endif %}
+          </th>
+          {% endif %}
+
+          {% for campo in campos.lista %}
+          <td>{% get_object_value object campo %}</td>
+          {% endfor %}
+
+          {% if campos.opciones %}
+          <th scope="col">
+            <a href="{% url 'qliksense:detail_licencia' object.id %}" class="btn btn-primary">
+              <img src="{% static 'images/qs_detail.png' %}" alt={{ opciones.detail }} height="25px">
+            </a>
+            <a href="{% url 'qliksense:update_licencia' object.id %}" class="btn btn-primary">
+              <img src="{% static 'images/qs_update.png' %}" alt={{ opciones.update }} height="25px">
+            </a>
+            <a href="{% url 'qliksense:delete_licencia' object.id %}" class="btn btn-danger">
+              <img src="{% static 'images/qs_delete.png' %}" alt={{ opciones.delete }} height="25px">
+            </a>
+          </th>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+      {{ mensaje.vacio }}
+    </div>
+    {% endif %}
+
+{% endblock %}
