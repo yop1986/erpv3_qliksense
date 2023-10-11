@@ -65,7 +65,9 @@ class Area_TipoLicencia(models.Model):
     area        = models.ForeignKey(Area, on_delete = models.RESTRICT)
 
     class Meta:
-        UniqueConstraint(fields=('tipo', 'area'), name='unq_atl_area_tipo')
+        constraints = [
+            UniqueConstraint(fields=['tipo', 'area'], name='unq_atl_area_tipo')
+        ]
 
     def __str__(self):
         return f'{self.area.nombre} ({self.licencias_disponibles()})'
@@ -75,6 +77,10 @@ class Area_TipoLicencia(models.Model):
 
     def licencias_disponibles(self):
         return self.cantidad - self.licencias_usadas()
+
+    def url_parent_detail(self):
+        return self.area.url_detail()
+    
 
 
 class Usuario (models.Model):

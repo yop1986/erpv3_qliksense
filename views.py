@@ -1,13 +1,15 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
+from django.views.generic.edit import FormMixin
 
 from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
-    PersonalListView, PersonalDetailView, PersonalDeleteView,
+    PersonalListView, PersonalDetailView, PersonalDeleteView, PersonalFormView,
     Configuraciones)
 
-from .models import TipoLicencia, Area
+from .models import TipoLicencia, Area, Area_TipoLicencia
+from .forms import Area_TipoLicencia_CreateForm
 
 gConfiguracion = Configuraciones()
 DISPLAYS = {
@@ -27,6 +29,9 @@ DISPLAYS = {
     'confirmacion': _('¿Esta seguro de eliminar el elemento indicado?')
 }
 
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 
 class IndexTemplateView(TemplateView):
     template_name = 'qliksense/index.html'
@@ -140,7 +145,6 @@ class LicenciasUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_tipolicencia'
     template_name = 'qliksense/forms.html'
     model = TipoLicencia
-    #success_url = reverse_lazy('qliksense:list_licencia')
     fields = ['descripcion', 'cantidad']
     extra_context = {
         'title': _('Modificar tipo de licencia'),
@@ -192,7 +196,6 @@ class AreaCreateView(PersonalCreateView):
     template_name = 'qliksense/forms.html'
     model = Area
     fields = ['nombre']
-    #success_url = reverse_lazy('qliksense:view_area')
     extra_context = {
         'title': _('Area/Gerencia'),
         'opciones': DISPLAYS['forms'],
@@ -216,11 +219,24 @@ class AreaDetailView(PersonalDetailView):
         'opciones': DISPLAYS['opciones'],
     }
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['forms'] = [
+            {
+                'modal':    'area_tipolicencia', 
+                'action':   reverse_lazy('qliksense:create_areatipo'),
+                'display':  _('Asignación de licencias'),
+                'form':     Area_TipoLicencia_CreateForm(instance=Area_TipoLicencia(area=self.object)),
+                'opciones': DISPLAYS['forms'],
+            },
+        ]
+        return context
+
+
 class AreaUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_area'
     template_name = 'qliksense/forms.html'
     model = Area
-    #success_url = reverse_lazy('qliksense:list_licencia')
     fields = ['nombre']
     extra_context = {
         'title': _('Modificar área / gerencia'),
@@ -240,3 +256,21 @@ class AreaDeleteView(PersonalDeleteView):
         'confirmacion': DISPLAYS['confirmacion'],
         'opciones': DISPLAYS['delete_form'],
     }
+
+
+
+
+class Area_TipoLicenciaCreateView(PersonalFormView):
+    permission_required = 'qliksense.add_area_tipolicencia'
+    template_name = 'qliksense/forms.html'
+    model = Area_TipoLicencia
+    form_class = Area_TipoLicencia_CreateForm
+    #success_url =
+    success_message = 'Asignación exitosa'
+
+    def form_valid(self, form, *args, **kwargs):
+        data = form.cleaned_data
+        area_tipo = Area_TipoLicencia(**data)
+        area_tipo.save()
+        self.success_url = area_tipo.url_parent_detail()
+        return super().form_valid(form)

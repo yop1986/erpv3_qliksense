@@ -18,6 +18,8 @@ urlpatterns = [
     path('area/ver/<uuid:pk>', views.AreaDetailView.as_view(), name='detail_area'),
     path('area/actualizar/<uuid:pk>', views.AreaUpdateView.as_view(), name='update_area'),
     path('area/eliminar/<uuid:pk>', views.AreaDeleteView.as_view(), name='delete_area'),
+
+    path('area_tipolicencia/nueva/', views.Area_TipoLicenciaCreateView.as_view(), name='create_areatipo'),
 ]
 
 
