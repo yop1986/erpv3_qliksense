@@ -84,6 +84,7 @@ class LicenciasListView(PersonalListView):
     template_name = 'qliksense/list.html'
     model = TipoLicencia
     ordering = ['descripcion']
+    paginate_by = 10
     extra_context = {
         'title': _('Licencias'),
         'campos': {
@@ -99,6 +100,12 @@ class LicenciasListView(PersonalListView):
                 'cantidad', 
             ],
         },
+        'campos_extra': [
+            {
+                'nombre':   _('Disponibles'),
+                'funcion': 'licencias_no_asignadas',  
+            },
+        ],
         'opciones': DISPLAYS['opciones'],
         'mensaje': {
             'vacio': _('No hay elementos para mostrar.'),
@@ -191,6 +198,7 @@ class AreaListView(PersonalListView):
     template_name = 'qliksense/list.html'
     model = Area
     ordering = ['nombre']
+    paginate_by = 10
     extra_context = {
         'title': _('Areas'),
         'campos': {
