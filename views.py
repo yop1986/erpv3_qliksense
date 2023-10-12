@@ -267,6 +267,10 @@ class Area_TipoLicenciaCreateView(PersonalFormView):
     form_class = Area_TipoLicencia_CreateForm
     #success_url =
     success_message = 'Asignación exitosa'
+    extra_context = {
+        'title': _('Asignación de licencias'),
+        'opciones': DISPLAYS['forms'],
+    }
 
     def form_valid(self, form, *args, **kwargs):
         data = form.cleaned_data

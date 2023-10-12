@@ -18,10 +18,12 @@ class TipoLicencia(models.Model):
         return self.descripcion
 
     def licencias_asignadas(self):
-        return Area_TipoLicencia.objects.filter(tipo=self, vigente=True).count()
+        cantidad = Area_TipoLicencia.objects.filter(tipo=self, vigente=True)\
+            .aggregate(models.Sum('cantidad'))['cantidad__sum']
+        return cantidad if cantidad else 0
 
     def licencias_no_asignadas(self):
-        return self.cantidad - self.licencias_asignadas()
+            return self.cantidad - self.licencias_asignadas()
 
     def url_detail(self):
         return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.id})
@@ -58,6 +60,7 @@ class Area_TipoLicencia(models.Model):
         Asignacion de tipos de licencia por área, para determinar los costos
         por su adquisición.
     '''
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cantidad    = models.PositiveSmallIntegerField(verbose_name=_('Cantidad'))
     vigente     = models.BooleanField(_('Estado'), default=True)
 
