@@ -135,6 +135,15 @@ class LicenciasDetailView(PersonalDetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        context['tables'] = [
+            {
+                'title':        _('Areas'),
+                'enumerar':     1,
+                'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object),
+                'campos':       ['area', 'cantidad'],
+                'opciones':     _('Opciones'),
+            },
+        ]
         context['campos_adicionales'] = [ 
             {'display': _('Licencias asignadas'), 'valor': self.object.licencias_asignadas()},
             {'display': _('Licencias pendientes'), 'valor': self.object.licencias_no_asignadas()},
@@ -230,8 +239,16 @@ class AreaDetailView(PersonalDetailView):
                 'opciones': DISPLAYS['forms'],
             },
         ]
+        context['tables'] = [
+            {
+                'title':        _('Licencias'),
+                'enumerar':     1,
+                'object_list':  Area_TipoLicencia.objects.filter(area=self.object),
+                'campos':       ['tipo', 'cantidad'],
+                'opciones':     _('Opciones'),
+            },
+        ]
         return context
-
 
 class AreaUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_area'
@@ -258,9 +275,7 @@ class AreaDeleteView(PersonalDeleteView):
     }
 
 
-
-
-class Area_TipoLicenciaCreateView(PersonalFormView):
+class Area_TipoLicenciaFormView(PersonalFormView):
     permission_required = 'qliksense.add_area_tipolicencia'
     template_name = 'qliksense/forms.html'
     model = Area_TipoLicencia
@@ -278,3 +293,32 @@ class Area_TipoLicenciaCreateView(PersonalFormView):
         area_tipo.save()
         self.success_url = area_tipo.url_parent_detail()
         return super().form_valid(form)
+
+class Area_TipoLicenciaUpdateView(PersonalUpdateView):
+    permission_required = 'qliksense.change_area_tipolicencia'
+    template_name = 'qliksense/forms.html'
+    model = Area_TipoLicencia
+    fields = ['cantidad']
+    #success_url = 
+    success_message = 'Re-asignación exitosa'
+    extra_context = {
+        'title': _('Modificar Asiganción'),
+        'opciones': DISPLAYS['forms'],
+    }
+
+    def get_success_url(self):
+        return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.object.tipo.id})
+
+class Area_TipoLicenciaDeleteView(PersonalDeleteView):
+    permission_required = 'qliksense.delete_area_tipolicencia'
+    template_name = 'qliksense/delete_confirmation.html'
+    model = Area_TipoLicencia
+    #success_url =
+    extra_context = {
+        'title': _('Eliminar asignación'),
+        'confirmacion': DISPLAYS['confirmacion'],
+        'opciones': DISPLAYS['delete_form'],
+    }
+
+    def get_success_url(self):
+        return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.object.tipo.id})

@@ -40,16 +40,23 @@
               </button>
             {% endfor %}
 
+            {% if object.url_update %}
             <a href="{{ object.url_update }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ opciones.update }}">
               <img src="{% static 'images/qs_update.png' %}" alt="{{ opciones.update }}" height="25px">
             </a>
+            {% endif %}
+            {% if object.url_delete %}
             <a href="{{ object.url_delete }}" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ opciones.delete }}">
               <img src="{% static 'images/qs_delete.png' %}" alt="{{ opciones.delete }}" height="25px">
             </a>
+            {% endif %}
         </div>
           {% endif %}
     </div>
 
+    {% for table in tables %}
+      {% include 'qliksense/tables.html' %}
+    {% endfor %}
 
     {% for form in forms %}
       {% include 'qliksense/modal_form.html' %}

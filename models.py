@@ -32,6 +32,8 @@ class TipoLicencia(models.Model):
         return reverse_lazy('qliksense:update_licencia', kwargs={'pk': self.id})
 
     def url_delete(self):
+        if Area_TipoLicencia.objects.filter(tipo = self.id).count()>0:
+            return None
         return reverse_lazy('qliksense:delete_licencia', kwargs={'pk': self.id})
 
 
@@ -52,6 +54,8 @@ class Area(models.Model):
         return reverse_lazy('qliksense:update_area', kwargs={'pk': self.id})
 
     def url_delete(self):
+        if Area_TipoLicencia.objects.filter(area=self.id):
+            return None
         return reverse_lazy('qliksense:delete_area', kwargs={'pk': self.id})
 
 
@@ -83,7 +87,12 @@ class Area_TipoLicencia(models.Model):
 
     def url_parent_detail(self):
         return self.area.url_detail()
-    
+
+    def url_update(self):
+        return reverse_lazy('qliksense:update_areatipo', kwargs={'pk': self.id})
+
+    def url_delete(self):
+        return reverse_lazy('qliksense:delete_areatipo', kwargs={'pk': self.id})
 
 
 class Usuario (models.Model):

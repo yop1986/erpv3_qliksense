@@ -19,7 +19,9 @@ urlpatterns = [
     path('area/actualizar/<uuid:pk>', views.AreaUpdateView.as_view(), name='update_area'),
     path('area/eliminar/<uuid:pk>', views.AreaDeleteView.as_view(), name='delete_area'),
 
-    path('area_tipolicencia/nueva/', views.Area_TipoLicenciaCreateView.as_view(), name='create_areatipo'),
+    path('area_tipolicencia/nueva/', views.Area_TipoLicenciaFormView.as_view(), name='create_areatipo'),
+    path('area_tipolicencia/actualizar/<uuid:pk>', views.Area_TipoLicenciaUpdateView.as_view(), name='update_areatipo'),
+    path('area_tipolicencia/eliminar/<uuid:pk>', views.Area_TipoLicenciaDeleteView.as_view(), name='delete_areatipo'),
 ]
 
 
