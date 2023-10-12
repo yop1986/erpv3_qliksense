@@ -85,9 +85,6 @@ class Area_TipoLicencia(models.Model):
     def licencias_disponibles(self):
         return self.cantidad - self.licencias_usadas()
 
-    def url_parent_detail(self):
-        return self.area.url_detail()
-
     def url_update(self):
         return reverse_lazy('qliksense:update_areatipo', kwargs={'pk': self.id})
 

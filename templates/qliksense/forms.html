@@ -10,7 +10,7 @@
     <!-- Cuando se actualiza y se quiere mostar algun dato -->
     {% endif %}
     
-    <form method="post">
+    <form method="post" autocomplete="off">
       {% csrf_token %}
       
       {{ form|crispy }}
