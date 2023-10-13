@@ -1,8 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import F, Count
 from django.utils.translation import gettext as _
 
-from .models import TipoLicencia, Area, Area_TipoLicencia
+from .models import TipoLicencia, Area, Area_TipoLicencia, Usuario
 
 class Area_TipoLicencia_ModelForm(forms.ModelForm):
     class Meta:
@@ -25,3 +26,21 @@ class Area_TipoLicencia_ModelForm(forms.ModelForm):
                 self.fields['area'].queryset = Area.objects.exclude(id__in=excluidos)
         except:
             pass
+
+class Usuario_ModelForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo', 'vigente']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            excluidos = Usuario.objects.filter(vigente=True).values('area_tipo')\
+                .annotate(licencias_usadas=Count('id'))\
+                .filter(licencias_usadas__gte=F('area_tipo__cantidad'))\
+                .values_list('area_tipo', flat=True)
+            print(excluidos)
+            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset.exclude(id__in=excluidos)
+
+        except: 
+            pass 

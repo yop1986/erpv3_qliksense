@@ -8,8 +8,8 @@ from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     PersonalListView, PersonalDetailView, PersonalDeleteView, PersonalFormView,
     Configuraciones)
 
-from .models import TipoLicencia, Area, Area_TipoLicencia
-from .forms import Area_TipoLicencia_ModelForm
+from .models import TipoLicencia, Area, Area_TipoLicencia, Usuario
+from .forms import Area_TipoLicencia_ModelForm, Usuario_ModelForm
 
 gConfiguracion = Configuraciones()
 DISPLAYS = {
@@ -358,4 +358,43 @@ class Area_TipoLicenciaDeleteView(PersonalDeleteView):
         if redirect:
             self.success_url = redirect
         return kwargs
+
+
+class UsuarioListView(PersonalListView):
+    permission_required = 'qliksense.view_usuario'
+    template_name = 'qliksense/list.html'
+    model = Usuario
+    ordering = ['-vigente', 'nombre']
+    paginate_by = 10
+    extra_context = {
+        'title': _('Usuarios'),
+        'campos': {
+            #-1: no enumera
+            # 0: inicia numeración en 0
+            # 1: inicia numeración en 1
+            'enumerar': 1,
+            # Si hay valor se muestra opciones por linea, de lo contrario no se muestran
+            'opciones': _('Opciones'),
+            # Lista de campos que se deben mostrar en la tabla
+            'lista': [
+                'nombre', 'extension', 'correo', 'area_tipo', 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+        'mensaje': {
+            'vacio': _('No hay elementos para mostrar.'),
+        },
+    }
+
+class UsuarioCreateView(PersonalCreateView):
+    permission_required = 'qliksense.add_usuario'
+    template_name = 'qliksense/forms.html'
+    model = Usuario
+    #fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo']
+    form_class = Usuario_ModelForm
+    success_url = reverse_lazy('qliksense:list_usuario')
+    extra_context = {
+        'title': _('Nuevo usuario'),
+        'opciones': DISPLAYS['forms'],
+    }
 

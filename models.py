@@ -77,13 +77,13 @@ class Area_TipoLicencia(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.area.nombre} ({self.licencias_disponibles()})'
+        return f'{self.tipo.descripcion} / {self.area.nombre} ({self.licencias_disponibles()})'
 
-    def licencias_usadas(self):
-        return Usuario.objects.filter(area_tipo=self, vigente=True).count()
+    def licencias_asignadas(self):
+        return Usuario.objects.filter(area_tipo=self).count()
 
     def licencias_disponibles(self):
-        return self.cantidad - self.licencias_usadas()
+        return self.cantidad - self.licencias_asignadas()
 
     def url_update(self):
         return reverse_lazy('qliksense:update_areatipo', kwargs={'pk': self.id})
@@ -108,10 +108,15 @@ class Usuario (models.Model):
     extension   = models.CharField(_('Exstensión'), max_length=6)
     correo      = models.CharField(_('Correo'), max_length=120)
     vigente     = models.BooleanField(_('Estado'), default=True)
+    creacion    = models.DateField(_('Ingreso'), auto_now_add=True)
+    actualizacion = models.DateField(_('Actualización'), auto_now=True)
 
     area_tipo   = models.ForeignKey(Area_TipoLicencia, on_delete=models.RESTRICT)
 
     def __str__(self):
-        return f'{self.nombre} ({self.tipo}{str(self.codigo).zfill(6)})'
+        return f'{self.nombre} ({self.get_usuario_dominio()})'
+
+    def get_usuario_dominio(self):
+        return f'{self.tipo}{str(self.codigo).zfill(6)}'
 
     

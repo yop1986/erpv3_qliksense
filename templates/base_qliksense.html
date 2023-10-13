@@ -22,8 +22,8 @@
     {% translate "Usuarios" %}
   </a>
   <ul class="dropdown-menu">
-    <li><a class="dropdown-item" href="#">Listar</a></li>
-    <li><a class="dropdown-item" href="#">Nuevo Usuario</a></li>
+    <li><a class="dropdown-item" href="{% url 'qliksense:list_usuario' %}">Listar</a></li>
+    <li><a class="dropdown-item" href="{% url 'qliksense:create_usuario' %}">Nuevo Usuario</a></li>
   </ul>
 </li>
 {% endblock %}
