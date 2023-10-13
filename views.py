@@ -394,7 +394,7 @@ class UsuarioListView(PersonalListView):
     permission_required = 'qliksense.view_usuario'
     template_name = 'qliksense/list.html'
     model = Usuario
-    ordering = ['-vigente', 'nombre']
+    ordering = ['-vigente', 'area_tipo__area', 'area_tipo__tipo']
     paginate_by = 10
     extra_context = {
         'title': _('Usuarios'),

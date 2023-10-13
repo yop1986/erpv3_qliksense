@@ -77,7 +77,7 @@ class Area_TipoLicencia(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.tipo.descripcion} / {self.area.nombre} ({self.licencias_disponibles()})'
+        return f'{self.area.nombre} / {self.tipo.descripcion} ({self.licencias_disponibles()})'
 
     def licencias_asignadas(self):
         return Usuario.objects.filter(area_tipo=self).count()
@@ -113,7 +113,7 @@ class Usuario (models.Model):
     creacion    = models.DateField(_('Ingreso'), auto_now_add=True)
     actualizacion = models.DateField(_('Actualización'), auto_now=True)
 
-    area_tipo   = models.ForeignKey(Area_TipoLicencia, on_delete=models.RESTRICT)
+    area_tipo   = models.ForeignKey(Area_TipoLicencia, verbose_name=_('Area/Tipo'), on_delete=models.RESTRICT)
 
     def __str__(self):
         return f'{self.nombre} ({self.get_usuario_dominio()})'
