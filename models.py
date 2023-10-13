@@ -5,12 +5,14 @@ from django.db.models.constraints import UniqueConstraint
 from django.utils.translation import gettext as _
 from django.urls import reverse_lazy
 
+from simple_history.models import HistoricalRecords
+
 
 class TipoLicencia(models.Model):
     '''
         Tipo de licencias contratadas para hacer uso de la herramienta.
     '''
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     descripcion = models.CharField(_('Descripción'), max_length = 120, unique = True)
     cantidad    = models.PositiveSmallIntegerField(verbose_name = _('Cantidad'))
 
@@ -41,7 +43,7 @@ class Area(models.Model):
     '''
         Area responsable del uso de la licencia
     '''
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre      = models.CharField(_('Nombre'), max_length = 120, unique = True)
 
     def __str__(self):
@@ -64,7 +66,7 @@ class Area_TipoLicencia(models.Model):
         Asignacion de tipos de licencia por área, para determinar los costos
         por su adquisición.
     '''
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cantidad    = models.PositiveSmallIntegerField(verbose_name=_('Cantidad'))
     vigente     = models.BooleanField(_('Estado'), default=True)
 
@@ -80,7 +82,7 @@ class Area_TipoLicencia(models.Model):
         return f'{self.area.nombre} / {self.tipo.descripcion} ({self.licencias_disponibles()})'
 
     def licencias_asignadas(self):
-        return Usuario.objects.filter(area_tipo=self).count()
+        return Usuario.objects.filter(vigente=True, area_tipo=self).count()
 
     def licencias_disponibles(self):
         return self.cantidad - self.licencias_asignadas()
@@ -102,7 +104,7 @@ class Usuario (models.Model):
         ('USR', 'USR'),
         ('OUT', 'OUT'),
     ]
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tipo        = models.CharField(_('Tipo de usuario'), choices=TIPOS, max_length=3)
     # def_tipo_display()
     codigo      = models.PositiveIntegerField(verbose_name=_('Código'))
@@ -114,6 +116,13 @@ class Usuario (models.Model):
     actualizacion = models.DateField(_('Actualización'), auto_now=True)
 
     area_tipo   = models.ForeignKey(Area_TipoLicencia, verbose_name=_('Area/Tipo'), on_delete=models.RESTRICT)
+
+    history     = HistoricalRecords(excluded_fields=['creacion', 'actualizacion'])
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['tipo', 'codigo'], name='unq_usr_tipo_codigo'),
+        ]
 
     def __str__(self):
         return f'{self.nombre} ({self.get_usuario_dominio()})'

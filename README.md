@@ -26,7 +26,14 @@ siguiente informacion:
 
     INSTALLED_APPS = [
         ...
+        'simple_history',
+
         'qliksense',
+    ]
+
+    MIDDLEWARE = [
+        ...
+        'simple_history.middleware.HistoryRequestMiddleware',
     ]
 
     INFORMACION_APLICACIONES = {
