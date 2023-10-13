@@ -41,7 +41,8 @@ class UsuarioCreate_ModelForm(forms.ModelForm):
                 .annotate(licencias_usadas=Count('id'))\
                 .filter(licencias_usadas__gte=F('area_tipo__cantidad'))\
                 .values_list('area_tipo', flat=True)
-            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset.exclude(id__in=excluidos)
+            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset\
+                .order_by('area__nombre', 'tipo__descripcion').exclude(id__in=excluidos)
         except: 
             pass 
 
@@ -61,6 +62,7 @@ class UsuarioUpdate_ModelForm(forms.ModelForm):
                 .annotate(licencias_usadas=Count('id'))\
                 .filter(licencias_usadas__gte=F('area_tipo__cantidad'))\
                 .values_list('area_tipo', flat=True)
-            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset.exclude(id__in=excluidos)
+            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset\
+                .order_by('area__nombre', 'tipo__descripcion').exclude(id__in=excluidos)
         except: 
             pass 
