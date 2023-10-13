@@ -27,7 +27,25 @@ class Area_TipoLicencia_ModelForm(forms.ModelForm):
         except:
             pass
 
-class Usuario_ModelForm(forms.ModelForm):
+class UsuarioCreate_ModelForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            # Se excluyen las areas_tipo que llegaron al limite de la cantidad de licencias
+            # de las cuales disponen
+            excluidos = Usuario.objects.filter(vigente=True).values('area_tipo')\
+                .annotate(licencias_usadas=Count('id'))\
+                .filter(licencias_usadas__gte=F('area_tipo__cantidad'))\
+                .values_list('area_tipo', flat=True)
+            self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset.exclude(id__in=excluidos)
+        except: 
+            pass 
+
+class UsuarioUpdate_ModelForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo', 'vigente']
@@ -35,12 +53,14 @@ class Usuario_ModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:
-            excluidos = Usuario.objects.filter(vigente=True).values('area_tipo')\
+            # Se excluyen las areas_tipo que llegaron al limite de la cantidad de licencias
+            # de las cuales disponen (se excluye de esto la que esta actualmente asignada
+            # al usuario que se modifica)
+            excluidos = Usuario.objects.filter(vigente=True)\
+                .exclude(area_tipo=self.initial['area_tipo']).values('area_tipo')\
                 .annotate(licencias_usadas=Count('id'))\
                 .filter(licencias_usadas__gte=F('area_tipo__cantidad'))\
                 .values_list('area_tipo', flat=True)
-            print(excluidos)
             self.fields['area_tipo'].queryset = self.fields['area_tipo'].queryset.exclude(id__in=excluidos)
-
         except: 
             pass 

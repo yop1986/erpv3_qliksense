@@ -9,7 +9,7 @@ from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     Configuraciones)
 
 from .models import TipoLicencia, Area, Area_TipoLicencia, Usuario
-from .forms import Area_TipoLicencia_ModelForm, Usuario_ModelForm
+from .forms import Area_TipoLicencia_ModelForm, UsuarioCreate_ModelForm, UsuarioUpdate_ModelForm
 
 gConfiguracion = Configuraciones()
 DISPLAYS = {
@@ -118,6 +118,7 @@ class LicenciasCreateView(PersonalCreateView):
     template_name = 'qliksense/forms.html'
     model = TipoLicencia
     fields = ['descripcion', 'cantidad']
+    #form_class = 
     success_url = reverse_lazy('qliksense:list_licencia')
     extra_context = {
         'title': _('Nuevo tipo de licencia'),
@@ -237,7 +238,8 @@ class AreaCreateView(PersonalCreateView):
     template_name = 'qliksense/forms.html'
     model = Area
     fields = ['nombre']
-    #success_url =
+    #form_class = 
+    #success_url = 
     extra_context = {
         'title': _('Area/Gerencia'),
         'opciones': DISPLAYS['forms'],
@@ -302,6 +304,8 @@ class AreaUpdateView(PersonalUpdateView):
     template_name = 'qliksense/forms.html'
     model = Area
     fields = ['nombre']
+    #form_class = 
+    #success_url = 
     extra_context = {
         'title': _('Modificar área / gerencia'),
         'opciones': DISPLAYS['forms'],
@@ -352,6 +356,7 @@ class Area_TipoLicenciaUpdateView(PersonalUpdateView):
     template_name = 'qliksense/forms.html'
     model = Area_TipoLicencia
     fields = ['cantidad']
+    #form_class = 
     #success_url = 
     success_message = 'Re-asignación exitosa'
     extra_context = {
@@ -416,10 +421,32 @@ class UsuarioCreateView(PersonalCreateView):
     template_name = 'qliksense/forms.html'
     model = Usuario
     #fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo']
-    form_class = Usuario_ModelForm
+    form_class = UsuarioCreate_ModelForm
     success_url = reverse_lazy('qliksense:list_usuario')
     extra_context = {
         'title': _('Nuevo usuario'),
         'opciones': DISPLAYS['forms'],
     }
 
+class UsuarioUpdateView(PersonalUpdateView):
+    permission_required = 'qliksense.change_usuario'
+    template_name = 'qliksense/forms.html'
+    model = Usuario
+    #fields = ['nombre']
+    form_class = UsuarioUpdate_ModelForm
+    success_url = reverse_lazy('qliksense:list_usuario')
+    extra_context = {
+        'title': _('Modificar área / gerencia'),
+        'opciones': DISPLAYS['forms'],
+    }
+
+class UsuarioDeleteView(PersonalDeleteView):
+    permission_required = 'qliksense.delete_usuario'
+    template_name = 'qliksense/delete_confirmation.html'
+    model = Usuario
+    success_url = reverse_lazy('qliksense:list_usuario')
+    extra_context = {
+        'title': _('Eliminar asignación a usuario'),
+        'confirmacion': DISPLAYS['confirmacion'],
+        'opciones': DISPLAYS['delete_form'],
+    }

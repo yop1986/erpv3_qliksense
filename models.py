@@ -121,4 +121,10 @@ class Usuario (models.Model):
     def get_usuario_dominio(self):
         return f'{self.tipo}{str(self.codigo).zfill(6)}'
 
-    
+    def url_update(self):
+        return reverse_lazy('qliksense:update_usuario', kwargs={'pk': self.id})
+
+    def url_delete(self):
+        if Usuario.objects.filter(area_tipo = self.id).count()>0:
+            return None
+        return reverse_lazy('qliksense:delete_usuario', kwargs={'pk': self.id})
