@@ -102,7 +102,8 @@ class LicenciasListView(PersonalListView):
         },
         'campos_extra': [
             {
-                'nombre':   _('Disponibles'),
+                'nombre':   _('Disponibles'), #display
+                # valor, constante o funcion 
                 'funcion': 'licencias_no_asignadas',  
             },
         ],
@@ -159,10 +160,22 @@ class LicenciasDetailView(PersonalDetailView):
             {
                 'title':        _('Areas'),
                 'enumerar':     1,
-                'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object),
+                'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object).order_by('area__nombre'),
                 'campos':       ['area', 'cantidad'],
                 'opciones':     _('Opciones'),
                 #Si tiene next, redirecciona a esa pagina
+                'campos_extra': [
+                    {
+                        'nombre':   _('Asignadas'), #display
+                        # valor, constante o funcion 
+                        'funcion': 'licencias_asignadas',  
+                    },
+                    {
+                        'nombre':   _('Disponibles'), #display
+                        # valor, constante o funcion 
+                        'funcion': 'licencias_disponibles',  
+                    },
+                ],
                 'next':         self.object.url_detail(),
             },
         ]
@@ -263,8 +276,20 @@ class AreaDetailView(PersonalDetailView):
             {
                 'title':        _('Licencias'),
                 'enumerar':     1,
-                'object_list':  Area_TipoLicencia.objects.filter(area=self.object),
+                'object_list':  Area_TipoLicencia.objects.filter(area=self.object).order_by('tipo__descripcion'),
                 'campos':       ['tipo', 'cantidad'],
+                'campos_extra': [
+                    {
+                        'nombre':   _('Asignadas'), #display
+                        # valor, constante o funcion 
+                        'funcion': 'licencias_asignadas',  
+                    },
+                    {
+                        'nombre':   _('Disponibles'), #display
+                        # valor, constante o funcion 
+                        'funcion': 'licencias_disponibles',  
+                    },
+                ],
                 'opciones':     _('Opciones'),
                 #Si tiene next, redirecciona a esa pagina
                 'next':         self.object.url_detail(),

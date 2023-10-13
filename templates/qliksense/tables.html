@@ -14,6 +14,10 @@
           <th scope="col">{% get_verbose_field_name table.object_list.0 campo %}</th>
         {% endfor %}
 
+        {% for campo in table.campos_extra %}
+          <th scope="col">{{ campo.nombre }}</th>
+        {% endfor %}
+
         {% if table.opciones %}
         <th scope="col">{{ table.opciones }}</th>
         {% endif %}
@@ -35,6 +39,16 @@
 
         {% for campo in table.campos %}
         <td>{% get_object_value object campo %}</td>
+        {% endfor %}
+
+        {% for campo in table.campos_extra %}
+        {% if campo.value %}
+        <td>{% get_object_value object campo %}</td>
+        {% elif campo.funcion %}
+        <td>{% get_object_funcvalue object campo.funcion %}</th>
+        {% else%}
+        <td>{{ campo.constante }}</td>
+        {% endif %}
         {% endfor %}
 
         {% if table.opciones %}

@@ -51,6 +51,7 @@
           {% elif campo.funcion %}
           <td>{% get_object_funcvalue object campo.funcion %}</th>
           {% else %}
+          <td>{{ campo.constante }}</td>
           {% endif %}
           {% endfor %}
 

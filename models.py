@@ -89,6 +89,8 @@ class Area_TipoLicencia(models.Model):
         return reverse_lazy('qliksense:update_areatipo', kwargs={'pk': self.id})
 
     def url_delete(self):
+        if Usuario.objects.filter(area_tipo = self.id).count()>0:
+            return None
         return reverse_lazy('qliksense:delete_areatipo', kwargs={'pk': self.id})
 
 
