@@ -26,8 +26,11 @@ siguiente informacion:
 
     INSTALLED_APPS = [
         ...
+        'crispy_forms',
+        'crispy_bootstrap5',
         'simple_history',
-
+        
+        'usuarios',
         'qliksense',
     ]
 
