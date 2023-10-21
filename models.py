@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.utils.translation import gettext as _
@@ -16,6 +17,8 @@ class TipoLicencia(models.Model):
     descripcion = models.CharField(_('Descripción'), max_length = 120, unique = True)
     cantidad    = models.PositiveSmallIntegerField(verbose_name = _('Cantidad'))
 
+    history     = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)
+
     def __str__(self):
         return self.descripcion
 
@@ -26,6 +29,9 @@ class TipoLicencia(models.Model):
 
     def licencias_no_asignadas(self):
             return self.cantidad - self.licencias_asignadas()
+
+    def url_create():
+        return reverse_lazy('qliksense:create_licencia')
 
     def url_detail(self):
         return reverse_lazy('qliksense:detail_licencia', kwargs={'pk': self.id})
@@ -46,8 +52,13 @@ class Area(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre      = models.CharField(_('Nombre'), max_length = 120, unique = True)
 
+    history     = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)
+
     def __str__(self):
         return f'{self.nombre}'
+
+    def url_create():
+        return reverse_lazy('qliksense:create_area')
 
     def url_detail(self):
         return reverse_lazy('qliksense:detail_area', kwargs={'pk': self.id})
@@ -72,6 +83,8 @@ class Area_TipoLicencia(models.Model):
 
     tipo        = models.ForeignKey(TipoLicencia, on_delete = models.RESTRICT)
     area        = models.ForeignKey(Area, on_delete = models.RESTRICT)
+
+    history     = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)
 
     class Meta:
         constraints = [
@@ -117,7 +130,7 @@ class Usuario (models.Model):
 
     area_tipo   = models.ForeignKey(Area_TipoLicencia, verbose_name=_('Area/Tipo'), on_delete=models.RESTRICT)
 
-    history     = HistoricalRecords(excluded_fields=['creacion', 'actualizacion'])
+    history     = HistoricalRecords(excluded_fields=['creacion', 'actualizacion'], user_model=settings.AUTH_USER_MODEL)
 
     class Meta:
         constraints = [
@@ -129,6 +142,9 @@ class Usuario (models.Model):
 
     def get_usuario_dominio(self):
         return f'{self.tipo}{str(self.codigo).zfill(6)}'
+
+    def url_create():
+        return reverse_lazy('qliksense:create_usuario')
 
     def url_update(self):
         return reverse_lazy('qliksense:update_usuario', kwargs={'pk': self.id})

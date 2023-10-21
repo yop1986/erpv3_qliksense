@@ -108,6 +108,10 @@ class LicenciasListView(PersonalListView):
             },
         ],
         'opciones': DISPLAYS['opciones'],
+        'create' :{
+            'display':  _('Nuevo'),
+            'url':      TipoLicencia.url_create(),
+        },
         'mensaje': {
             'vacio': _('No hay elementos para mostrar.'),
         },
@@ -228,6 +232,10 @@ class AreaListView(PersonalListView):
             ],
         },
         'opciones': DISPLAYS['opciones'],
+        'create' :{
+            'display':  _('Nueva'),
+            'url':      Area.url_create(),
+        },
         'mensaje': {
             'vacio': _('No hay elementos para mostrar.'),
         },
@@ -411,6 +419,10 @@ class UsuarioListView(PersonalListView):
             ],
         },
         'opciones': DISPLAYS['opciones'],
+        'create' :{
+            'display':  _('Nuevo'),
+            'url':      Usuario.url_create(),
+        },
         'mensaje': {
             'vacio': _('No hay elementos para mostrar.'),
         },
