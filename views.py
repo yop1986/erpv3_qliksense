@@ -26,6 +26,7 @@ DISPLAYS = {
         'update': _('Editar'),
         'delete': _('Eliminar'),
     },
+    'tabla_vacia': _('No hay elementos para mostrar'),
     'confirmacion': _('¿Esta seguro de eliminar el elemento indicado?')
 }
 
@@ -113,7 +114,7 @@ class LicenciasListView(PersonalListView):
             'url':      TipoLicencia.url_create(),
         },
         'mensaje': {
-            'vacio': _('No hay elementos para mostrar.'),
+            'vacio': DISPLAYS['tabla_vacia'],
         },
     }
 
@@ -237,7 +238,7 @@ class AreaListView(PersonalListView):
             'url':      Area.url_create(),
         },
         'mensaje': {
-            'vacio': _('No hay elementos para mostrar.'),
+            'vacio': DISPLAYS['tabla_vacia'],
         },
     }
 
@@ -424,7 +425,7 @@ class UsuarioListView(PersonalListView):
             'url':      Usuario.url_create(),
         },
         'mensaje': {
-            'vacio': _('No hay elementos para mostrar.'),
+            'vacio': DISPLAYS['tabla_vacia'],
         },
     }
 
