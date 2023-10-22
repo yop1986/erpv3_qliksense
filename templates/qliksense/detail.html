@@ -23,7 +23,19 @@
         <div class="col">
           <strong>{{ campo.display }}</strong>
         </div>
+        {% if campo.valor %}
         <div class="col"> {{ campo.valor }}</div>
+        {% elif campo.ul_lista %}
+        <div class="col"> 
+          <ul>
+          {% for elemento in campo.ul_lista %}
+          <li> {{ elemento }} </li>
+          {% endfor %}
+          </ul>
+        </div>
+        {% else %}
+        {{ campo }}
+        {% endif %}
       </div>
     {% endfor %}
 
