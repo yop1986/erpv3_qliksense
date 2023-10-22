@@ -18,7 +18,13 @@ DISPLAYS = {
         'cancel': _('Cancelar'),
     },
     'delete_form': {
+        'confirmacion': _('¿Esta seguro de eliminar el elemento indicado?'),
         'submit': _('Eliminar'),
+        'cancel': _('Cancelar'),
+    },
+    'disable_form': {
+        'confirmacion': _('¿Esta seguro de inhabilitar el elemento indicado?'),
+        'submit': _('Inhabilitar'),
         'cancel': _('Cancelar'),
     },
     'opciones': {
@@ -27,7 +33,6 @@ DISPLAYS = {
         'delete': _('Eliminar'),
     },
     'tabla_vacia': _('No hay elementos para mostrar'),
-    'confirmacion': _('¿Esta seguro de eliminar el elemento indicado?')
 }
 
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
@@ -207,7 +212,6 @@ class LicenciasDeleteView(PersonalDeleteView):
     success_url = reverse_lazy('qliksense:list_licencia')
     extra_context = {
         'title': _('Eliminar tipo de licencia'),
-        'confirmacion': DISPLAYS['confirmacion'],
         'opciones': DISPLAYS['delete_form'],
     }
 
@@ -330,7 +334,6 @@ class AreaDeleteView(PersonalDeleteView):
     success_url = reverse_lazy('qliksense:list_area')
     extra_context = {
         'title': _('Eliminar area / gerencia'),
-        'confirmacion': DISPLAYS['confirmacion'],
         'opciones': DISPLAYS['delete_form'],
     }
 
@@ -387,7 +390,6 @@ class Area_TipoLicenciaDeleteView(PersonalDeleteView):
     #success_url =
     extra_context = {
         'title': _('Eliminar asignación'),
-        'confirmacion': DISPLAYS['confirmacion'],
         'opciones': DISPLAYS['delete_form'],
     }
 
@@ -460,6 +462,5 @@ class UsuarioDeleteView(PersonalDeleteView):
     success_url = reverse_lazy('qliksense:list_usuario')
     extra_context = {
         'title': _('Eliminar asignación a usuario'),
-        'confirmacion': DISPLAYS['confirmacion'],
         'opciones': DISPLAYS['delete_form'],
     }

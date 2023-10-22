@@ -10,7 +10,7 @@
       {% csrf_token %}
       
       {{ form|crispy }}
-      <p>{{ confirmacion }} ({{ object }})</p>
+      <p>{{ opciones.confirmacion }} ({{ object }})</p>
       <input type="submit" value="{{ opciones.submit }}" name="" class="btn btn-danger">
     </form>
 {% endblock %}
