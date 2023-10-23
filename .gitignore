@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 README.html
+static/certs/
 
 # C extensions
 *.so
