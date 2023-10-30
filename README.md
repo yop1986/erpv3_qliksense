@@ -37,8 +37,36 @@ Posterior a esta configuracion es necesario agregar las urls al proyecto base __
 
     path('qlik', include('qliksense.urls')),
 
+#### Configuracion
+
+Es necesario realiar la configuración para permitir la conexión a traves del Engine de Qlik
+a esta aplicación y sincronizar la información.
+
+    [qliksense]
+    # Se utiliza para realizar la conexión a los streams y modelos de qliksense
+    qs_webproxy     = 
+
+    # Se utiliz para generar las urls de conexion a los web_socket
+    protocolo       = wss
+    proxy           = 
+    puerto          = 
+    certificados    =
+
+    #Usuario para autenticarse en la api de qlik
+    dominio         = 
+    usuario         = 
+
+    #Carpeta para guardar los script
+    CarpetaLScript  = D:\Backup\Qlik\QlikJson
+    CarpetaElimiando= Eliminados
+    DiasEliminacion = 91
+
+##### Certificados
+
+Es necesario colocar en la carpeta static en la raiz del proyecto la carpeta certs/ que contiene los certificados
+que permitirán la conexion segura del usuario a la API de Qlik Sense. (Estos certificados se generan desde el QMC)
+
 #### Comandos adicionales de Django
 
     (venv) ERPv3> python manage.py check
-    (venv) ERPv3> python manage.py makemigrations qliksense
     (venv) ERPv3> python manage.py migrate qliksense
