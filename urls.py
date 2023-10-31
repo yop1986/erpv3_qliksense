@@ -28,6 +28,9 @@ urlpatterns = [
     path('usuario/actualizar/<uuid:pk>', views.UsuarioUpdateView.as_view(), name='update_usuario'),
     path('usuario/eliminar/<uuid:pk>', views.UsuarioDeleteView.as_view(), name='delete_usuario'),
 
+    path('stream/', views.StreamListView.as_view(), name='list_stream'),
+    path('stream/ver/<uuid:pk>', views.StreamDetailView.as_view(), name='detail_stream'),
+    path('qlikapi/recargar/', views.refresh_all, name='refresh_all_data'),
 ]
 
 

@@ -8,6 +8,11 @@ from django.urls import reverse_lazy
 
 from simple_history.models import HistoricalRecords
 
+from usuarios.personal_views import Configuraciones
+
+###
+conf = Configuraciones()
+###
 
 class TipoLicencia(models.Model):
     '''
@@ -44,7 +49,6 @@ class TipoLicencia(models.Model):
             return None
         return reverse_lazy('qliksense:delete_licencia', kwargs={'pk': self.id})
 
-
 class Area(models.Model):
     '''
         Area responsable del uso de la licencia
@@ -70,7 +74,6 @@ class Area(models.Model):
         if Area_TipoLicencia.objects.filter(area=self.id):
             return None
         return reverse_lazy('qliksense:delete_area', kwargs={'pk': self.id})
-
 
 class Area_TipoLicencia(models.Model):
     '''
@@ -107,7 +110,6 @@ class Area_TipoLicencia(models.Model):
         if Usuario.objects.filter(area_tipo = self.id).count()>0:
             return None
         return reverse_lazy('qliksense:delete_areatipo', kwargs={'pk': self.id})
-
 
 class Usuario (models.Model):
     '''
@@ -153,3 +155,48 @@ class Usuario (models.Model):
         if Usuario.objects.filter(area_tipo = self.id).count()>0:
             return None
         return reverse_lazy('qliksense:delete_usuario', kwargs={'pk': self.id})
+
+
+class Stream (models.Model):
+    '''
+        Streams de Qlik Sense
+    '''
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nombre      = models.CharField(_('Nombre'), max_length = 120, unique = True)
+    
+    history     = HistoricalRecords(excluded_fields=['qlik_id'], user_model=settings.AUTH_USER_MODEL)
+
+    def __str__(self):
+        return f'{self.nombre}'
+
+    def qlik_url(self):
+        return conf.get_value('qliksense', 'qs_webproxy').join(f'stream/{self.qlik_id}')
+
+    def url_refresh(self):
+        if self:
+            return reverse_lazy('qliksense:refresh_stream', kwargs={'pk': self.id})
+        return reverse_lazy('qliksense:refresh_stream')
+
+    def url_create():
+        return reverse_lazy('qliksense:create_stream')
+
+    def url_detail(self):
+        return reverse_lazy('qliksense:detail_stream', kwargs={'pk': self.id})
+
+class Modelo(models.Model):
+    ''' 
+        Modelo de datos 
+        Registrado en Qlik Sense
+    '''
+    id      = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nombre  = models.CharField(verbose_name=_('Nombre'), max_length=90)
+    descripcion = models.CharField(verbose_name=_('Descripción'), max_length=210, blank=True)
+    stream  = models.ForeignKey(Stream, verbose_name=_('Stream'), on_delete=models.RESTRICT, related_name='modelo_stream')
+
+    history     = HistoricalRecords(excluded_fields=['qlik_id'], user_model=settings.AUTH_USER_MODEL)
+
+    def __str__(self):
+        return self.nombre
+
+    def get_resumen(self, max_length=60):
+        return f'{self.descripcion[:max_length]}...'

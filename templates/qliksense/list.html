@@ -8,10 +8,15 @@
         <div class="col-10">
           <h1>{{ title }}</h1>
         </div>
-        {% if create %}
         <div class="col text-center">
+        {% if create %}
         <a href="{{ create.url }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ create.display }}">
           <img src="{% static 'images/qs_create.png' %}" alt="{{ create.display }}" height="42px">
+        </a>
+        {% endif %}
+        {% if refresh %}
+        <a href="{{ refresh.url }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ refresh.display }}">
+          <img src="{% static 'images/qs_refresh.png' %}" alt="{{ refresh.display }}" height="42px">
         </a>
         </div>
         {% endif %}
@@ -46,9 +51,9 @@
           {% if campos.enumerar > -1 %}
           <th scope="row">
             {% if campos.enumerar == 0 %}
-              {{ forloop.counter0 }}
+              {{ forloop.counter0|add:page_obj.start_index|add:"-1" }}
             {% else %}
-              {{ forloop.counter }}
+              {{ forloop.counter0|add:page_obj.start_index }}
             {% endif %}
           </th>
           {% endif %}
@@ -97,4 +102,5 @@
     </div>
     {% endif %}
 
+    {% include 'pagination.html' %}
 {% endblock %}

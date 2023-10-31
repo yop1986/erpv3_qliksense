@@ -1,15 +1,18 @@
-from django.shortcuts import render
-from django.views.generic.base import TemplateView
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
-from django.views.generic.edit import FormMixin
+from django.views.generic.base import TemplateView
+
+from simple_history.utils import bulk_create_with_history
 
 from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     PersonalListView, PersonalDetailView, PersonalDeleteView, PersonalFormView,
     Configuraciones)
 
-from .models import TipoLicencia, Area, Area_TipoLicencia, Usuario
+from .models import (TipoLicencia, Area, Area_TipoLicencia, Usuario,
+    Stream, Modelo)
 from .forms import Area_TipoLicencia_ModelForm, UsuarioCreate_ModelForm, UsuarioUpdate_ModelForm
+from .qliksenseapi import QSWebSockets # Configuracion as ApiConfig, ValidaArchivos
 
 gConfiguracion = Configuraciones()
 DISPLAYS = {
@@ -464,3 +467,103 @@ class UsuarioDeleteView(PersonalDeleteView):
         'title': _('Eliminar asignación a usuario'),
         'opciones': DISPLAYS['delete_form'],
     }
+
+
+
+class StreamListView(PersonalListView):
+    permission_required = 'qliksense.view_stream'
+    template_name = 'qliksense/list.html'
+    model = Stream
+    ordering = ['nombre']
+    paginate_by = 10
+    extra_context = {
+        'title': _('Streams'),
+        'campos': {
+            #-1: no enumera
+            # 0: inicia numeración en 0
+            # 1: inicia numeración en 1
+            'enumerar': 1,
+            # Si hay valor se muestra opciones por linea, de lo contrario no se muestran
+            'opciones': _('Opciones'),
+            # Lista de campos que se deben mostrar en la tabla
+            'lista': [
+                'nombre', 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+        'refresh' :{
+            'display':  _('Recargar'),
+            'url':      reverse_lazy('qliksense:refresh_all_data'),
+        },
+        'mensaje': {
+            'vacio': DISPLAYS['tabla_vacia'],
+        },
+    }
+
+class StreamDetailView(PersonalDetailView):
+    permission_required = 'qliksense.view_stream'
+    template_name = 'qliksense/detail.html'
+    model = Stream
+    extra_context = {
+        'title': _('Streams'),
+        'campos': {
+            #'opciones': _('Opciones'),
+            'lista': [
+                'nombre' 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        return context
+
+def refresh_all(request):
+    if request.user.is_authenticated:
+        qs_ws = QSWebSockets(debug=True)
+        stream_refresh(request, qs_ws)
+        model_refresh(request, qs_ws)
+
+        return redirect(reverse_lazy('qliksense:list_stream'))
+    return redirect(reverse_lazy('usuarios:login') + '?next=' + reverse_lazy('qliksense:refresh_all_data'))
+
+def stream_refresh(request, qs_ws):
+    streams = Stream.objects.all()
+    array_insert = []
+
+    for element in qs_ws.get_all_streams():
+        stream = streams.filter(id = element['qId'])
+        streams = streams.exclude(id = element['qId'])
+        if stream:
+            if not stream.filter(nombre = element['qName']):
+                stream[0].nombre = element['qName']
+                stream[0]._history_user = request.user
+                stream[0].save()
+        else:
+            stream = Stream(id = element['qId'], nombre=element['qName'])
+            stream._history_user = request.user
+            array_insert.append(stream)
+
+    streams.delete()
+    bulk_create_with_history(array_insert, Stream, batch_size=500)
+
+def model_refresh(request, qs_ws):
+    modelos = Modelo.objects.all()
+    array_insert=[]
+
+    for element in qs_ws.get_all_models():
+        modelo = modelos.filter(id = element['id'])
+        modelos = modelos.exclude(id = element['id'])
+        if modelo:
+            if not modelo.filter(nombre = element['nombre']) or not modelo.filter(stream_id = element['stream_id']):
+                modelo[0].nombre = element['nombre']
+                modelo[0].stream_id = element['stream_id']
+                modelo[0]._history_user = request.user
+                modelo[0].save()
+        else:
+            modelo = Modelo(id = element['id'], nombre = element['nombre'], stream_id = element['stream_id'])
+            modelo._history_user = request.user
+            array_insert.append(modelo)
+    modelos.delete()
+    bulk_create_with_history(array_insert, Modelo, batch_size=500)
