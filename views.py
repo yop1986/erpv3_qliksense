@@ -492,10 +492,14 @@ class StreamListView(PersonalListView):
             ],
         },
         'opciones': DISPLAYS['opciones'],
-        'refresh' :{
-            'display':  _('Recargar'),
-            'url':      reverse_lazy('qliksense:refresh_all_data'),
-        },
+        'botones_extra':[
+            {
+                'display':  _('Recargar'),
+                'url':      reverse_lazy('qliksense:refresh_all_data'),
+                'img':      'qs_refresh.png',
+            
+            },
+        ],
         'mensaje': {
             'vacio': DISPLAYS['tabla_vacia'],
         },

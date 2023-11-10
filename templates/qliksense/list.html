@@ -14,11 +14,13 @@
           <img src="{% static 'images/qs_create.png' %}" alt="{{ create.display }}" height="42px">
         </a>
         {% endif %}
-        {% if refresh %}
-        <a href="{{ refresh.url }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ refresh.display }}">
-          <img src="{% static 'images/qs_refresh.png' %}" alt="{{ refresh.display }}" height="42px">
+        {% if botones_extra %}
+        {% for boton in botones_extra %}
+        <a href="{{ boton.url }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ boton.display }}">
+          <img src="{% static 'images/' %}{{ boton.img }}" alt="{{ boton.display }}" height="42px">
         </a>
         </div>
+        {% endfor %}
         {% endif %}
       </div>
 
