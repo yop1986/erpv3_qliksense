@@ -1,0 +1,42 @@
+{% load static fields_tags %}
+
+<div class="row">
+  <h2>{{ table.title }}</h2>
+  {% if table.object_list %}
+  <table class="table">
+    <thead>
+      <tr>
+        {% if table.enumerar > -1 %}
+        <th scope="col">#</th>
+        {% endif %}
+
+        {% for campo in table.campos %}
+          <th scope="col">{{ campo }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for object in table.object_list %}
+      <tr>
+        {% if table.enumerar > -1 %}
+        <th scope="row">
+          {% if table.enumerar == 0 %}
+            {{ forloop.counter0 }}
+          {% else %}
+            {{ forloop.counter }}
+          {% endif %}
+        </th>
+        {% endif %}
+
+        {% for element in object %}
+        <td>{{ element }}</td>
+        {% endfor %}
+        </th>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>

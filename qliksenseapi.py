@@ -1,4 +1,4 @@
-import configparser, os, ssl, websocket, json
+import configparser, os, ssl, websocket, json, shutil
 from datetime import datetime, date
 
 class Configuracion():
@@ -36,6 +36,9 @@ class ValidaArchivos():
         self.path = pPath if pPath else os.getcwd()
 
     def lista_archivos(self, pPath=None):
+        '''
+            Lista todos los archivos en el Path indicado
+        '''
         archivos = []
         path = pPath if pPath else self.path
 
@@ -45,10 +48,13 @@ class ValidaArchivos():
                 if not elem_path.endswith('.docx'):
                     archivos.append(elem_path)
             else:
-                self.lista_archivos(elem_path)
+                archivos = archivos + self.lista_archivos(elem_path)
         return archivos
 
     def genera_folder(self, pPath=None, *args):
+        '''
+            Genera folders de acuerdo con los parametros en el Path indicado
+        '''
         path = pPath if pPath else self.path
         for arg in args:
             path = os.path.join(path, arg)
@@ -57,10 +63,17 @@ class ValidaArchivos():
         return path
 
     def renombrar_folder(self, pNombreAnterior, pNombreNuevo, pPath=None):
+        '''
+            Renombra el nombre del directorio (ultimo en el árbol) dentro del path
+        '''
         path = pPath if pPath else self.path
         os.rename(os.path.join(path, pNombreAnterior), os.path.join(path, pNombreNuevo))
 
-    def valida_antiguedad_dias(self, pArchivo, pDias = 1, pOperacion=">", pDefault=False):
+    def valida_antiguedad_dias(self, pArchivo, pDias=1, pOperacion=">", pDefault=False):
+        '''
+            Valida la antiguedad de los archivos enviados, contra las condiciones evaluando a verdadero
+            cuando las mismas se cumplen.
+        '''
         if os.path.exists(pArchivo):
             ahora       = datetime.now()
             ti_m        = os.path.getmtime(pArchivo)
@@ -80,44 +93,56 @@ class ValidaArchivos():
                 return False
         return pDefault
 
-    def del_archivos(self, pDias=1000):
+    def mov_archivos(self, pArchivoOrigen, pPathDestino, pDias=1000):
+        '''
+            Mueve los archivos origen al destino si supera los días indicados. (utiliza
+            el mismo nombre de archivo que el original - solo cambia de ubicacion -)
+        '''
         archivos        = []
-
-        for archivo in self.lista_archivos():
-            if self.valida_antiguedad(archivo, pDias, pOperacion=">"):
-                archivos.append([archivo, m_ti, diferencia.days])
-                os.remove(archivo)
+        for archivo in self.lista_archivos(pArchivoOrigen):
+            if self.valida_antiguedad_dias(archivo, pDias):
+                # archivos.append([archivo, m_ti, diferencia.days])
+                # os.remove(archivo)
+                destino =  os.path.join(pPathDestino, os.path.basename(archivo))
+                shutil.move(archivo, destino)
+                archivos.append(f'{archivo} --> {destino}')
         return archivos
 
 class QSWebSockets():
     def __init__(self, debug=False, pPath=None, cert_path='./certs/', user_directory=None, user_id=None, hard_delete=False):
-        conf                = Configuracion()
-        self.archivo        = ValidaArchivos(pPath)
-        ssl.match_hostname  = lambda cert, hostname: True
         websocket.enableTrace(debug)
+        ssl.match_hostname  = lambda cert, hostname: True
+        conf                = Configuracion()
+
         self.debug          = debug
+        self.archivo        = ValidaArchivos(pPath)
         
-        # Directorios
+        # Parametros de conexión
+        self.url            = conf.get_url()+'/app/'
         certpath            = conf.get_path_certificado(cert_path)
+        self.certs          = ({
+                            "ca_certs": os.path.join(certpath, 'root.pem'), 
+                            "certfile": os.path.join(certpath, 'client.pem'), 
+                            "keyfile":  os.path.join(certpath, 'client_key.pem'), 
+                            "cert_reqs": ssl.CERT_REQUIRED, 
+                            "server_side": False
+                        })
+        self.credenciales   = conf.get_autenticacion(user_directory, user_id)
+        
+        # Streams default
+        self.working_stream = conf.get_informacion('qliksense', 'working_stream')
+        self.working_stream_id = conf.get_informacion('qliksense', 'working_stream_id', '00000000000000000000000000000000')
+
+        # Directorios
         pathbasedir         = conf.get_informacion('qliksense', 'carpeta_base')
         datadir             = conf.get_informacion('qliksense', 'carpeta_data')
         eliminadosdir       = conf.get_informacion('qliksense', 'carpeta_eliminados')
         diaseliminacion     = conf.get_informacion('qliksense', 'dias_para_eliminar')
         logs_dir            = self.archivo.genera_folder(pathbasedir, 'logs', f'{date.today()}')
         self.base_data      = self.archivo.genera_folder(pathbasedir, datadir)
+        self.dir_eliminados = self.archivo.genera_folder(pathbasedir, eliminadosdir, f'{date.today()}')
         self.log_file       = open(os.path.join(logs_dir, 'log.txt'), 'a')
-        
-        # Parametros de Concexión
-        self.url            = conf.get_url()+'/app/'
-        self.certs          = ({
-                            "ca_certs": os.path.join(certpath, 'root.pem'), #conf.get_path_certificado(cert_path) + "root.pem", 
-                            "certfile": os.path.join(certpath, 'client.pem'), #conf.get_path_certificado(cert_path) + "client.pem", 
-                            "keyfile":  os.path.join(certpath, 'client_key.pem'), #conf.get_path_certificado(cert_path) + "client_key.pem", 
-                            "cert_reqs": ssl.CERT_REQUIRED, 
-                            "server_side": False
-                        })
-        self.credenciales   = conf.get_autenticacion(user_directory, user_id)
-        # Conexiones
+
         self.ws             = self.new_connection()    
         
     def __del__(self):
@@ -141,107 +166,114 @@ class QSWebSockets():
             "params": kwargs,
         })
 
+    def dict_value(self, pObjeto, pDefault=None, *args):
+        if len(args) > 1:
+            return self.dict_value(pObjeto.get(args[0]), pDefault, *args[1:])
+        resultado = pObjeto.get(args[0]) if pObjeto else None
+
+        if resultado:
+            return resultado
+        return pDefault
+
     def mensaje_log(self, mensaje, tabs=0, salto_linea=1):
         self.log_file.write('\t'*tabs + f'{datetime.now()} :: {mensaje}' + '\n'*salto_linea) 
 
-    def get_all_streams(self, dir_trabajo='--- Trabajo ---'):
+    def get_all_streams(self):
         streams_json_path = os.path.join(self.base_data, 'Streams.json')
         self.mensaje_log('INICIA EXTRACCIÓN DE STREAMS')
         self.mensaje_log('Crea o valida directorios para los stream', tabs=1)
         self.ws.send(self.define_request(method='GetStreamList'))
-        data    = json.loads(self.ws.recv())
-        data['result']['qStreamList'].append({"qName": dir_trabajo, "qId": '00000000000000000000000000000000'})
+        data    = self.dict_value(json.loads(self.ws.recv()), None, 'result', 'qStreamList')
+        # Se agrega informacion del directorio de trabajo
+        data.append({"qName": self.working_stream, "qId": self.working_stream_id})
         # extraigo el original y el nuevo para validar las actualizaciones
         # y actualizar el nombre de las carpetas (no eliminar y volver a crearlas)
-        streams_json = json.loads(json.dumps(data['result']['qStreamList']))
         try:
             streams_json_ini = json.load(open(streams_json_path))
         except Exception as e:
             streams_json_ini = []
         
-        for stream_nuevo in streams_json:
+        for stream_nuevo in data:
             idx = next((index for (index, d) in enumerate(streams_json_ini) if d["qId"] == stream_nuevo['qId']), None)
             if not idx is None and idx >= 0:
                 stream_ant = streams_json_ini.pop(idx)
-                if stream_ant['qName'] != stream_nuevo['qName']:
+                if stream_ant and stream_ant['qName'] != stream_nuevo['qName']:
                     self.mensaje_log(f'Stream (cambio de nombre): {stream_ant["qName"]} >> {stream_nuevo["qName"]} ({stream_nuevo["qId"]})', tabs=1)
                     self.archivo.renombrar_folder(stream_ant['qName'], stream_nuevo['qName'], self.base_data)
                 
         with open(streams_json_path, 'w') as streams_json_file:
-            streams_json_file.write(json.dumps(data['result']['qStreamList'], indent=4))
+            streams_json_file.write(json.dumps(data, indent=4))
             
-            for stream in data['result']['qStreamList']:
+            for stream in data:
                 self.mensaje_log(f'Stream: {stream["qName"]} ({stream["qId"]})', tabs=1)
                 self.archivo.genera_folder(self.base_data, stream['qName'])
             
         self.mensaje_log('FINALIZA EXTRACCIÓN DE STREAMS', salto_linea=2)
-        return streams_json
+        return data
 
-    def dict_value(self, pObjeto, pDefault=None, *args):
-        if len(args) > 1:
-            return self.dict_value(pObjeto, pDefault, args[1:])
-        resultado = pObjeto.get(args[0])
-        if resultado:
-            return resultado
-        return pDefault
-
-    def get_model_file_name(self, pStreamName, pModelo, pModeloId, dir_trabajo='--- Trabajo ---'):
-        stream_name = pStreamName['name'] if pStreamName else dir_trabajo
+    def get_model_file_name(self, pStreamName, pModelo, pModeloId):
+        stream_name = pStreamName['name'] if pStreamName else self.working_stream
         return os.path.join(self.base_data, f'{stream_name}', f"{pModelo} - ({pModeloId})")
 
-    def get_all_models(self, dir_trabajo='--- Trabajo ---'):
+    def get_all_models(self):
         modelos_dict = []
         self.mensaje_log('INICIA EXTRACCIÓN DE MODELOS')
         self.ws.send(self.define_request(method='GetDocList'))
-        data                = json.loads(self.ws.recv())
-        # extraigo el original y el nuevo para validar las actualizaciones
-        # y actualizar el nombre de los archivos (para evitar dejar huerfanos algunos archivos)
-        modelos_json        = json.loads(json.dumps(data['result']['qDocList']))
-        
-        for modelo in modelos_json:
+        data                = self.dict_value(json.loads(self.ws.recv()), None, 'result', 'qDocList')
+
+        for modelo in data:
             qId             = self.dict_value(modelo, None, 'qDocId')
-            stream_file     = self.dict_value(modelo, dir_trabajo, 'qMeta','stream','name')
-            modelo_file     = os.path.join(self.base_data, stream_file, f'{modelo["qDocName"]} ({qId})')
+            qName           = self.dict_value(modelo, None, "qDocName")
+            stream_file     = self.dict_value(modelo, self.working_stream, 'qMeta','stream','name')
+            modelo_file     = os.path.join(self.base_data, stream_file, f'{qName} ({qId})')
             modelos_dict.append({
                 'id':       qId,
-                'nombre':   modelo["qDocName"],
-                'stream_id':   modelo['qMeta']['stream']['id'] if modelo['qMeta']['stream'] else '00000000000000000000000000000000',
+                'nombre':   qName,
+                'stream_id': self.dict_value(modelo, self.working_stream_id, 'qMeta','stream','id'),
             })
+            self.mensaje_log(f'--> : {qName} :: {qId}', tabs=1)
+
+            ws_modelo       = self.new_connection(qId)
+            ws_modelo.send(self.define_request(handle=-1, method='OpenDoc', qDocName= f"{qId}", qNoData= False))
+            respuesta       = json.loads(ws_modelo.recv())
+            modelo_qResult  = self.dict_value(respuesta, None, 'result') # respuesta OpenDoc
             
-            try:
-                if self.archivo.valida_antiguedad_dias(f"{modelo_file}.txt", pDias=1, pOperacion=">", pDefault=True):
-                    self.mensaje_log(f'Conexión al modelo {modelo["qDocName"]} ({qId})', tabs=1)
-                    ws_modelo       = self.new_connection(qId)
-                    ws_modelo.send(self.define_request(handle=-1, method='OpenDoc', qDocName= f"{qId}", qNoData= False))
-                    modelo_qReturn  = json.loads(ws_modelo.recv()) # respuesta OpenDoc
-                    if modelo_qReturn['result']:
-                        self.mensaje_log('Extracción load script', tabs=2)
-                        ws_modelo.send(self.define_request(handle=modelo_qReturn['result']['qReturn']['qHandle'], method='GetScript'))
-                        modelo_respuesta= json.loads(ws_modelo.recv()) # respuesta GetScript
-                        with open(f"{modelo_file}.txt", 'w', encoding='utf-8') as file:
-                                file.write(modelo_respuesta['result']['qScript'].replace('\r', ''))
-                else:
-                    self.mensaje_log(f'Existe el archivo script: {modelo["qDocName"]} ({qId})', tabs=1)
-                
-                if self.archivo.valida_antiguedad_dias(f"{modelo_file}.json", pDias = 1, pOperacion=">", pDefault=True):
-                    self.mensaje_log('Extracción de campos', tabs=2)
-                    ws_modelo.send(self.define_request(handle=modelo_qReturn['result']['qReturn']['qHandle'], method='CreateSessionObject', 
-                        qProp= { 'qInfo': {'qType': 'FieldList' } , 'qFieldListDef': { 'qShowSrcTables': True } }) )
-                    sessionobj_qReturn = json.loads(ws_modelo.recv())['result']['qReturn']
-                    ws_modelo.send(self.define_request(handle=sessionobj_qReturn['qHandle'], method='GetLayout'))
-                    sessionojb_respuesta = json.loads(ws_modelo.recv())
-                    modelo['qFields'] = sessionojb_respuesta['result']['qLayout']['qFieldList']
-                    with open(f"{modelo_file}.json", 'w', encoding='utf-8') as file:
-                        file.write(json.dumps(modelo, indent=4))
-                else:
-                    self.mensaje_log(f'Existe el archivo json: {modelo["qDocName"]} ({qId})', tabs=1)
+            if not modelo_qResult:
+                self.mensaje_log(f'No se pudo establecer la conexion: {modelo_file} :: {respuesta}')
+                break
 
-                    
-            except Exception as e:
-                self.mensaje_log(f'ERRROR: {modelo_file}', tabs=2)
-                raise e
+            self.mensaje_log(f'Conexión al modelo {qName} ({qId})', tabs=1)
+            modelo_qHandle  = self.dict_value(modelo_qResult, None, 'qReturn', 'qHandle')
 
-        self.mensaje_log('FINALIZA EXTRACCIÓN DE MODELOS')
+            if self.archivo.valida_antiguedad_dias(f"{modelo_file}.txt", pDias=1, pOperacion=">", pDefault=True):
+                self.mensaje_log('Extracción load script', tabs=2)
+                ws_modelo.send(self.define_request(handle=modelo_qHandle, method='GetScript'))
+                respuesta   = json.loads(ws_modelo.recv()) # respuesta GetScript
+                with open(f"{modelo_file}.txt", 'w', encoding='utf-8') as file:
+                    file.write(self.dict_value(respuesta, None, 'result', 'qScript').replace('\r', ''))
+            else:
+                self.mensaje_log(f'Modelo ya recargado (Script): {qName} ({qId}) -- {modelo_qHandle} --', tabs=1)
+            
+            if self.archivo.valida_antiguedad_dias(f"{modelo_file}.json", pDias = 1, pOperacion=">", pDefault=True):
+                self.mensaje_log('Extracción de campos', tabs=2)
+                ws_modelo.send(self.define_request(handle=modelo_qHandle, method='CreateSessionObject', 
+                    qProp= { 'qInfo': {'qType': 'FieldList' } , 'qFieldListDef': { 'qShowSrcTables': True } }) )
+                respuesta   = json.loads(ws_modelo.recv()) # respuesta CreateSessionObject
+                obj_qHandle = self.dict_value(respuesta, None, 'result', 'qReturn', 'qHandle')
+                ws_modelo.send(self.define_request(handle=obj_qHandle, method='GetLayout'))
+                respuesta   = json.loads(ws_modelo.recv()) # respuesta GetLayout
+                modelo['qFields'] = self.dict_value(respuesta, None, 'result', 'qLayout', 'qFieldList')
+                with open(f"{modelo_file}.json", 'w', encoding='utf-8') as file:
+                    file.write(json.dumps(modelo, indent=4))
+            else:
+                self.mensaje_log(f'Modelo ya recargado (Json): {qName} ({qId}) -- {modelo_qHandle} --', tabs=1)
+
+            #ws_modelo.send(self.define_request(handle=-1, method='OpenDoc', qDocName= f"{qId}", qNoData= False))
+            ws_modelo.close()
+
+        self.mensaje_log('FINALIZA EXTRACCIÓN DE MODELOS', salto_linea=2)
+        self.mensaje_log('Depuración de modelos inexistentes (no actualizados)')
+        for archivo in self.archivo.mov_archivos(self.base_data, self.dir_eliminados, 1):
+            self.mensaje_log(archivo, tabs=1)
+        self.mensaje_log('Finaliza depuración de modelos inexistentes (no actualizados)')
         return modelos_dict
-        
-        

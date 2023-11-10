@@ -8,10 +8,10 @@ from django.urls import reverse_lazy
 
 from simple_history.models import HistoricalRecords
 
-from usuarios.personal_views import Configuraciones
+from usuarios.personal_views import Configuracion
 
 ###
-conf = Configuraciones()
+conf = Configuracion()
 ###
 
 class TipoLicencia(models.Model):
@@ -200,3 +200,6 @@ class Modelo(models.Model):
 
     def get_resumen(self, max_length=60):
         return f'{self.descripcion[:max_length]}...'
+
+    def url_detail(self):
+        return reverse_lazy('qliksense:detail_modelo', kwargs={'pk': self.id})

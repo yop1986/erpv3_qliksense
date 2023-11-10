@@ -1,3 +1,5 @@
+import os, json
+
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -7,14 +9,14 @@ from simple_history.utils import bulk_create_with_history
 
 from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
     PersonalListView, PersonalDetailView, PersonalDeleteView, PersonalFormView,
-    Configuraciones)
+    Configuracion)
 
 from .models import (TipoLicencia, Area, Area_TipoLicencia, Usuario,
     Stream, Modelo)
 from .forms import Area_TipoLicencia_ModelForm, UsuarioCreate_ModelForm, UsuarioUpdate_ModelForm
 from .qliksenseapi import QSWebSockets # Configuracion as ApiConfig, ValidaArchivos
 
-gConfiguracion = Configuraciones()
+gConfiguracion = Configuracion()
 DISPLAYS = {
     'forms': {
         'submit': _('Guardar'),
@@ -177,7 +179,6 @@ class LicenciasDetailView(PersonalDetailView):
                 'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object).order_by('area__nombre'),
                 'campos':       ['area', 'cantidad'],
                 'opciones':     _('Opciones'),
-                #Si tiene next, redirecciona a esa pagina
                 'campos_extra': [
                     {
                         'nombre':   _('Asignadas'), #display
@@ -468,7 +469,7 @@ class UsuarioDeleteView(PersonalDeleteView):
         'opciones': DISPLAYS['delete_form'],
     }
 
-
+### 
 
 class StreamListView(PersonalListView):
     permission_required = 'qliksense.view_stream'
@@ -505,7 +506,7 @@ class StreamDetailView(PersonalDetailView):
     template_name = 'qliksense/detail.html'
     model = Stream
     extra_context = {
-        'title': _('Streams'),
+        'title': _('Stream'),
         'campos': {
             #'opciones': _('Opciones'),
             'lista': [
@@ -517,18 +518,32 @@ class StreamDetailView(PersonalDetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+
+        context['tables'] = [
+            {
+                'title':        _('Modelos'),
+                'enumerar':     1,
+                'object_list':  Modelo.objects.filter(stream=self.object).order_by('nombre'),
+                'campos':       ['nombre'],
+                'opciones':     _('Opciones'),
+            },
+        ]
+
         return context
 
 def refresh_all(request):
     if request.user.is_authenticated:
-        qs_ws = QSWebSockets(debug=True)
+        qs_ws = QSWebSockets(debug=False)
         stream_refresh(request, qs_ws)
         model_refresh(request, qs_ws)
-
         return redirect(reverse_lazy('qliksense:list_stream'))
     return redirect(reverse_lazy('usuarios:login') + '?next=' + reverse_lazy('qliksense:refresh_all_data'))
 
 def stream_refresh(request, qs_ws):
+    '''
+        Obtiene los Streams correspondientes, actualiza sus nombres y los crea en caso de ser nuevos.
+        Elimina los streams que ya no existen en Qlik.
+    '''
     streams = Stream.objects.all()
     array_insert = []
 
@@ -549,6 +564,10 @@ def stream_refresh(request, qs_ws):
     bulk_create_with_history(array_insert, Stream, batch_size=500)
 
 def model_refresh(request, qs_ws):
+    '''
+        Obtiene los Modelos correspondientes, crea y actualiza el modelo de acuerdo con el id generado desde Qlik.
+        Elimina modelos que ya no existen en Qlik.
+    '''
     modelos = Modelo.objects.all()
     array_insert=[]
 
@@ -565,5 +584,61 @@ def model_refresh(request, qs_ws):
             modelo = Modelo(id = element['id'], nombre = element['nombre'], stream_id = element['stream_id'])
             modelo._history_user = request.user
             array_insert.append(modelo)
+    
+    for m in modelos:
+        m._history_user = request.user
     modelos.delete()
+    
     bulk_create_with_history(array_insert, Modelo, batch_size=500)
+
+
+class ModelDetailView(PersonalDetailView):
+    permission_required = 'qliksense.view_modelo'
+    template_name = 'qliksense/detail.html'
+    model = Modelo
+    extra_context = {
+        'title': _('Modelo'),
+        'campos': {
+            #'opciones': _('Opciones'),
+            'lista': [
+                'nombre' 
+            ],
+        },
+        'opciones': DISPLAYS['opciones'],
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+
+        context['manual_tables'] = [
+            {
+                'title':        _('Campos'),
+                'enumerar':     1,
+                'object_list':  self.campo_valores(self.object), #Modelo.objects.filter(stream=self.object).order_by('nombre'),
+                'campos':       ['Nombre', 'Tipo'],
+                'opciones':     _('Opciones'),
+            },
+        ]
+
+        return context
+
+    def campo_valores(self, pObj):
+        if self.request.user.is_authenticated:
+            file = os.path.join(gConfiguracion.get_value('qliksense', 'carpeta_base'), gConfiguracion.get_value('qliksense', 'carpeta_data'), pObj.stream.nombre, f"{pObj.nombre} ({pObj.id}).json")
+            datos = []
+            for element in json.load(open(file)).get('qFields').get('qItems'):
+                datos.append([element['qName'], self.campo_tipo(element['qTags'])])
+            return datos
+        return None
+
+    def campo_tipo(self, valores):
+        if '$date' in valores:
+            return _('Fecha/Hora')
+        elif '$integer' in valores:
+            return _('Entero')
+        elif '$numeric' in valores:
+            return _('Decimal')
+        elif '$text' in valores:
+            return _('Texto')
+        else:
+            return '-'

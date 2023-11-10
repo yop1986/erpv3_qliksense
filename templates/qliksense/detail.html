@@ -70,6 +70,10 @@
       {% include 'qliksense/tables.html' %}
     {% endfor %}
 
+    {% for table in manual_tables %}
+      {% include 'qliksense/manual_tables.html' %}
+    {% endfor %}
+
     {% for form in forms %}
       {% include 'qliksense/modal_form.html' %}
     {% endfor %}
