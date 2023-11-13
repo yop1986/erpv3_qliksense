@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
                 ('tipo', models.CharField(choices=[('USR', 'USR'), ('OUT', 'OUT')], max_length=3, verbose_name='Tipo de usuario')),
                 ('codigo', models.PositiveIntegerField(verbose_name='Código')),
                 ('nombre', models.CharField(max_length=120, verbose_name='Nombre')),
-                ('extension', models.CharField(blank=True, max_length=6, null=True, verbose_name='Exstensión')),
+                ('extension', models.CharField(blank=True, max_length=6, null=True, verbose_name='Extensión')),
                 ('correo', models.CharField(blank=True, max_length=120, null=True, verbose_name='Correo')),
                 ('vigente', models.BooleanField(default=True, verbose_name='Estado')),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
