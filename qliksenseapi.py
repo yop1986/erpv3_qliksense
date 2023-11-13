@@ -137,12 +137,16 @@ class QSWebSockets():
         pathbasedir         = conf.get_informacion('qliksense', 'carpeta_base')
         datadir             = conf.get_informacion('qliksense', 'carpeta_data')
         eliminadosdir       = conf.get_informacion('qliksense', 'carpeta_eliminados')
-        diaseliminacion     = conf.get_informacion('qliksense', 'dias_para_eliminar')
         logs_dir            = self.archivo.genera_folder(pathbasedir, 'logs', f'{date.today()}')
         self.base_data      = self.archivo.genera_folder(pathbasedir, datadir)
         self.dir_eliminados = self.archivo.genera_folder(pathbasedir, eliminadosdir, f'{date.today()}')
         self.log_file       = open(os.path.join(logs_dir, 'log.txt'), 'a')
 
+        try:
+            self.diaseliminacion= int(conf.get_informacion('qliksense', 'dias_para_eliminar'))
+        except Exception as e:
+            self.diaseliminacion= 1
+            
         self.ws             = self.new_connection()    
         
     def __del__(self):
@@ -273,7 +277,7 @@ class QSWebSockets():
 
         self.mensaje_log('FINALIZA EXTRACCIÓN DE MODELOS', salto_linea=2)
         self.mensaje_log('Depuración de modelos inexistentes (no actualizados)')
-        for archivo in self.archivo.mov_archivos(self.base_data, self.dir_eliminados, 1):
+        for archivo in self.archivo.mov_archivos(self.base_data, self.dir_eliminados, self.diaseliminacion):
             self.mensaje_log(archivo, tabs=1)
         self.mensaje_log('Finaliza depuración de modelos inexistentes (no actualizados)')
         return modelos_dict
