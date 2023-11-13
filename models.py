@@ -124,7 +124,7 @@ class Usuario (models.Model):
     # def_tipo_display()
     codigo      = models.PositiveIntegerField(verbose_name=_('Código'))
     nombre      = models.CharField(_('Nombre'), max_length=120)
-    extension   = models.CharField(_('Exstensión'), max_length=6, blank=True, null=True)
+    extension   = models.CharField(_('Extension'), max_length=6, blank=True, null=True)
     correo      = models.CharField(_('Correo'), max_length=120, blank=True, null=True)
     vigente     = models.BooleanField(_('Estado'), default=True)
     creacion    = models.DateField(_('Ingreso'), auto_now_add=True)
