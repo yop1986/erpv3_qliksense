@@ -45,7 +45,7 @@ DISPLAYS = {
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 
 class IndexTemplateView(TemplateView):
-    template_name = 'qliksense/index.html'
+    template_name = 'template/index.html'
 
     extra_context ={
         'title': _('Qlik Sense'),
@@ -92,7 +92,7 @@ class IndexTemplateView(TemplateView):
 
 class LicenciasListView(PersonalListView):
     permission_required = 'qliksense.view_tipolicencia'
-    template_name = 'qliksense/list.html'
+    template_name = 'template/list.html'
     model = TipoLicencia
     ordering = ['descripcion']
     paginate_by = 10
@@ -130,7 +130,7 @@ class LicenciasListView(PersonalListView):
 
 class LicenciasCreateView(PersonalCreateView):
     permission_required = 'qliksense.add_tipolicencia'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = TipoLicencia
     fields = ['descripcion', 'cantidad']
     #form_class = 
@@ -142,7 +142,7 @@ class LicenciasCreateView(PersonalCreateView):
 
 class LicenciasDetailView(PersonalDetailView):
     permission_required = 'qliksense.view_tipolicencia'
-    template_name = 'qliksense/detail.html'
+    template_name = 'template/detail.html'
     model = TipoLicencia
     extra_context = {
         'title': _('Tipo'),
@@ -198,7 +198,7 @@ class LicenciasDetailView(PersonalDetailView):
 
 class LicenciasUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_tipolicencia'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = TipoLicencia
     fields = ['descripcion', 'cantidad']
     extra_context = {
@@ -211,7 +211,7 @@ class LicenciasUpdateView(PersonalUpdateView):
 
 class LicenciasDeleteView(PersonalDeleteView):
     permission_required = 'qliksense.delete_tipolicencia'
-    template_name = 'qliksense/delete_confirmation.html'
+    template_name = 'template/delete_confirmation.html'
     model = TipoLicencia
     success_url = reverse_lazy('qliksense:list_licencia')
     extra_context = {
@@ -222,7 +222,7 @@ class LicenciasDeleteView(PersonalDeleteView):
 
 class AreaListView(PersonalListView):
     permission_required = 'qliksense.view_area'
-    template_name = 'qliksense/list.html'
+    template_name = 'template/list.html'
     model = Area
     ordering = ['nombre']
     paginate_by = 10
@@ -252,7 +252,7 @@ class AreaListView(PersonalListView):
 
 class AreaCreateView(PersonalCreateView):
     permission_required = 'qliksense.add_area'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Area
     fields = ['nombre']
     #form_class = 
@@ -267,7 +267,7 @@ class AreaCreateView(PersonalCreateView):
 
 class AreaDetailView(PersonalDetailView):
     permission_required = 'qliksense.view_area'
-    template_name = 'qliksense/detail.html'
+    template_name = 'template/detail.html'
     model = Area
     extra_context = {
         'title': _('Area / Gerencia'),
@@ -318,7 +318,7 @@ class AreaDetailView(PersonalDetailView):
 
 class AreaUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_area'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Area
     fields = ['nombre']
     #form_class = 
@@ -333,7 +333,7 @@ class AreaUpdateView(PersonalUpdateView):
 
 class AreaDeleteView(PersonalDeleteView):
     permission_required = 'qliksense.delete_area'
-    template_name = 'qliksense/delete_confirmation.html'
+    template_name = 'template/delete_confirmation.html'
     model = Area
     success_url = reverse_lazy('qliksense:list_area')
     extra_context = {
@@ -344,7 +344,7 @@ class AreaDeleteView(PersonalDeleteView):
 
 class Area_TipoLicenciaFormView(PersonalFormView):
     permission_required = 'qliksense.add_area_tipolicencia'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Area_TipoLicencia
     form_class = Area_TipoLicencia_ModelForm
     success_url = reverse_lazy('qliksense:list_licencia')
@@ -369,7 +369,7 @@ class Area_TipoLicenciaFormView(PersonalFormView):
 
 class Area_TipoLicenciaUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_area_tipolicencia'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Area_TipoLicencia
     fields = ['cantidad']
     #form_class = 
@@ -389,7 +389,7 @@ class Area_TipoLicenciaUpdateView(PersonalUpdateView):
 
 class Area_TipoLicenciaDeleteView(PersonalDeleteView):
     permission_required = 'qliksense.delete_area_tipolicencia'
-    template_name = 'qliksense/delete_confirmation.html'
+    template_name = 'template/delete_confirmation.html'
     model = Area_TipoLicencia
     #success_url =
     extra_context = {
@@ -407,7 +407,7 @@ class Area_TipoLicenciaDeleteView(PersonalDeleteView):
 
 class UsuarioListView(PersonalListView):
     permission_required = 'qliksense.view_usuario'
-    template_name = 'qliksense/list.html'
+    template_name = 'template/list.html'
     model = Usuario
     ordering = ['-vigente', 'area_tipo__area', 'area_tipo__tipo']
     paginate_by = 10
@@ -437,7 +437,7 @@ class UsuarioListView(PersonalListView):
 
 class UsuarioCreateView(PersonalCreateView):
     permission_required = 'qliksense.add_usuario'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Usuario
     #fields = ['tipo', 'codigo', 'nombre', 'extension', 'correo', 'area_tipo']
     form_class = UsuarioCreate_ModelForm
@@ -449,7 +449,7 @@ class UsuarioCreateView(PersonalCreateView):
 
 class UsuarioUpdateView(PersonalUpdateView):
     permission_required = 'qliksense.change_usuario'
-    template_name = 'qliksense/forms.html'
+    template_name = 'template/forms.html'
     model = Usuario
     #fields = ['nombre']
     form_class = UsuarioUpdate_ModelForm
@@ -461,7 +461,7 @@ class UsuarioUpdateView(PersonalUpdateView):
 
 class UsuarioDeleteView(PersonalDeleteView):
     permission_required = 'qliksense.delete_usuario'
-    template_name = 'qliksense/delete_confirmation.html'
+    template_name = 'template/delete_confirmation.html'
     model = Usuario
     success_url = reverse_lazy('qliksense:list_usuario')
     extra_context = {
@@ -473,7 +473,7 @@ class UsuarioDeleteView(PersonalDeleteView):
 
 class StreamListView(PersonalListView):
     permission_required = 'qliksense.view_stream'
-    template_name = 'qliksense/list.html'
+    template_name = 'template/list.html'
     model = Stream
     ordering = ['nombre']
     paginate_by = 10
@@ -507,7 +507,7 @@ class StreamListView(PersonalListView):
 
 class StreamDetailView(PersonalDetailView):
     permission_required = 'qliksense.view_stream'
-    template_name = 'qliksense/detail.html'
+    template_name = 'template/detail.html'
     model = Stream
     extra_context = {
         'title': _('Stream'),
@@ -598,7 +598,7 @@ def model_refresh(request, qs_ws):
 
 class ModelDetailView(PersonalDetailView):
     permission_required = 'qliksense.view_modelo'
-    template_name = 'qliksense/detail.html'
+    template_name = 'template/detail.html'
     model = Modelo
     extra_context = {
         'title': _('Modelo'),
