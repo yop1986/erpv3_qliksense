@@ -1,5 +1,6 @@
 import os, json
 
+from django.apps import apps
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -7,9 +8,9 @@ from django.views.generic.base import TemplateView
 
 from simple_history.utils import bulk_create_with_history
 
-from usuarios.personal_views import (PersonalCreateView, PersonalUpdateView,
-    PersonalListView, PersonalDetailView, PersonalDeleteView, PersonalFormView,
-    Configuracion)
+from usuarios.personal_views import (PersonalContextMixin, PersonalCreateView, 
+    PersonalUpdateView, PersonalListView, PersonalDetailView, PersonalDeleteView, 
+    PersonalFormView, Configuracion)
 
 from .models import (TipoLicencia, Area, Area_TipoLicencia, Usuario,
     Stream, Modelo)
@@ -17,6 +18,7 @@ from .forms import Area_TipoLicencia_ModelForm, UsuarioCreate_ModelForm, Usuario
 from .qliksenseapi import QSWebSockets # Configuracion as ApiConfig, ValidaArchivos
 
 gConfiguracion = Configuracion()
+
 DISPLAYS = {
     'forms': {
         'submit': _('Guardar'),
@@ -40,18 +42,21 @@ DISPLAYS = {
     'tabla_vacia': _('No hay elementos para mostrar'),
 }
 
+class QlikContextMixin(PersonalContextMixin):
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['general']['menu_app'] = apps.get_app_config(__package__).name +'_menu.html'
+        return context 
+
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 
-class IndexTemplateView(TemplateView):
+class IndexTemplateView(TemplateView, QlikContextMixin):
     template_name = 'template/index.html'
 
     extra_context ={
         'title': _('Qlik Sense'),
-        'general': {
-            'nombre_sitio': gConfiguracion.get_value('sitio', 'nombre'),
-        },
         'elementos': [
             {
                 'display':  _('Licencias'),
@@ -90,7 +95,7 @@ class IndexTemplateView(TemplateView):
     }
 
 
-class LicenciasListView(PersonalListView):
+class LicenciasListView(PersonalListView, QlikContextMixin):
     permission_required = 'qliksense.view_tipolicencia'
     template_name = 'template/list.html'
     model = TipoLicencia
@@ -128,7 +133,7 @@ class LicenciasListView(PersonalListView):
         },
     }
 
-class LicenciasCreateView(PersonalCreateView):
+class LicenciasCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_tipolicencia'
     template_name = 'template/forms.html'
     model = TipoLicencia
@@ -140,7 +145,7 @@ class LicenciasCreateView(PersonalCreateView):
         'opciones': DISPLAYS['forms'],
     }
 
-class LicenciasDetailView(PersonalDetailView):
+class LicenciasDetailView(PersonalDetailView, QlikContextMixin):
     permission_required = 'qliksense.view_tipolicencia'
     template_name = 'template/detail.html'
     model = TipoLicencia
@@ -196,7 +201,7 @@ class LicenciasDetailView(PersonalDetailView):
         ]
         return context
 
-class LicenciasUpdateView(PersonalUpdateView):
+class LicenciasUpdateView(PersonalUpdateView, QlikContextMixin):
     permission_required = 'qliksense.change_tipolicencia'
     template_name = 'template/forms.html'
     model = TipoLicencia
@@ -209,7 +214,7 @@ class LicenciasUpdateView(PersonalUpdateView):
     def get_success_url(self):
         return self.object.url_detail()
 
-class LicenciasDeleteView(PersonalDeleteView):
+class LicenciasDeleteView(PersonalDeleteView, QlikContextMixin):
     permission_required = 'qliksense.delete_tipolicencia'
     template_name = 'template/delete_confirmation.html'
     model = TipoLicencia
@@ -220,7 +225,7 @@ class LicenciasDeleteView(PersonalDeleteView):
     }
 
 
-class AreaListView(PersonalListView):
+class AreaListView(PersonalListView, QlikContextMixin):
     permission_required = 'qliksense.view_area'
     template_name = 'template/list.html'
     model = Area
@@ -250,7 +255,7 @@ class AreaListView(PersonalListView):
         },
     }
 
-class AreaCreateView(PersonalCreateView):
+class AreaCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_area'
     template_name = 'template/forms.html'
     model = Area
@@ -265,7 +270,7 @@ class AreaCreateView(PersonalCreateView):
     def get_success_url(self):
         return self.object.url_detail()
 
-class AreaDetailView(PersonalDetailView):
+class AreaDetailView(PersonalDetailView, QlikContextMixin):
     permission_required = 'qliksense.view_area'
     template_name = 'template/detail.html'
     model = Area
@@ -316,7 +321,7 @@ class AreaDetailView(PersonalDetailView):
         ]
         return context
 
-class AreaUpdateView(PersonalUpdateView):
+class AreaUpdateView(PersonalUpdateView, QlikContextMixin):
     permission_required = 'qliksense.change_area'
     template_name = 'template/forms.html'
     model = Area
@@ -331,7 +336,7 @@ class AreaUpdateView(PersonalUpdateView):
     def get_success_url(self):
         return self.object.url_detail()
 
-class AreaDeleteView(PersonalDeleteView):
+class AreaDeleteView(PersonalDeleteView, QlikContextMixin):
     permission_required = 'qliksense.delete_area'
     template_name = 'template/delete_confirmation.html'
     model = Area
@@ -342,7 +347,7 @@ class AreaDeleteView(PersonalDeleteView):
     }
 
 
-class Area_TipoLicenciaFormView(PersonalFormView):
+class Area_TipoLicenciaFormView(PersonalFormView, QlikContextMixin):
     permission_required = 'qliksense.add_area_tipolicencia'
     template_name = 'template/forms.html'
     model = Area_TipoLicencia
@@ -367,7 +372,7 @@ class Area_TipoLicenciaFormView(PersonalFormView):
         area_tipo.save()
         return super().form_valid(form)
 
-class Area_TipoLicenciaUpdateView(PersonalUpdateView):
+class Area_TipoLicenciaUpdateView(PersonalUpdateView, QlikContextMixin):
     permission_required = 'qliksense.change_area_tipolicencia'
     template_name = 'template/forms.html'
     model = Area_TipoLicencia
@@ -387,7 +392,7 @@ class Area_TipoLicenciaUpdateView(PersonalUpdateView):
             self.success_url = redirect
         return kwargs
 
-class Area_TipoLicenciaDeleteView(PersonalDeleteView):
+class Area_TipoLicenciaDeleteView(PersonalDeleteView, QlikContextMixin):
     permission_required = 'qliksense.delete_area_tipolicencia'
     template_name = 'template/delete_confirmation.html'
     model = Area_TipoLicencia
@@ -405,7 +410,7 @@ class Area_TipoLicenciaDeleteView(PersonalDeleteView):
         return kwargs
 
 
-class UsuarioListView(PersonalListView):
+class UsuarioListView(PersonalListView, QlikContextMixin):
     permission_required = 'qliksense.view_usuario'
     template_name = 'template/list.html'
     model = Usuario
@@ -435,7 +440,7 @@ class UsuarioListView(PersonalListView):
         },
     }
 
-class UsuarioCreateView(PersonalCreateView):
+class UsuarioCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_usuario'
     template_name = 'template/forms.html'
     model = Usuario
@@ -447,7 +452,7 @@ class UsuarioCreateView(PersonalCreateView):
         'opciones': DISPLAYS['forms'],
     }
 
-class UsuarioUpdateView(PersonalUpdateView):
+class UsuarioUpdateView(PersonalUpdateView, QlikContextMixin):
     permission_required = 'qliksense.change_usuario'
     template_name = 'template/forms.html'
     model = Usuario
@@ -459,7 +464,7 @@ class UsuarioUpdateView(PersonalUpdateView):
         'opciones': DISPLAYS['forms'],
     }
 
-class UsuarioDeleteView(PersonalDeleteView):
+class UsuarioDeleteView(PersonalDeleteView, QlikContextMixin):
     permission_required = 'qliksense.delete_usuario'
     template_name = 'template/delete_confirmation.html'
     model = Usuario
@@ -471,7 +476,7 @@ class UsuarioDeleteView(PersonalDeleteView):
 
 ### 
 
-class StreamListView(PersonalListView):
+class StreamListView(PersonalListView, QlikContextMixin):
     permission_required = 'qliksense.view_stream'
     template_name = 'template/list.html'
     model = Stream
@@ -505,7 +510,7 @@ class StreamListView(PersonalListView):
         },
     }
 
-class StreamDetailView(PersonalDetailView):
+class StreamDetailView(PersonalDetailView, QlikContextMixin):
     permission_required = 'qliksense.view_stream'
     template_name = 'template/detail.html'
     model = Stream
@@ -513,9 +518,9 @@ class StreamDetailView(PersonalDetailView):
         'title': _('Stream'),
         'campos': {
             #'opciones': _('Opciones'),
-            'lista': [
-                'nombre' 
-            ],
+            #'lista': [
+            #    'nombre' 
+            #],
         },
         'opciones': DISPLAYS['opciones'],
     }
@@ -596,7 +601,7 @@ def model_refresh(request, qs_ws):
     bulk_create_with_history(array_insert, Modelo, batch_size=500)
 
 
-class ModelDetailView(PersonalDetailView):
+class ModelDetailView(PersonalDetailView, QlikContextMixin):
     permission_required = 'qliksense.view_modelo'
     template_name = 'template/detail.html'
     model = Modelo
@@ -604,9 +609,9 @@ class ModelDetailView(PersonalDetailView):
         'title': _('Modelo'),
         'campos': {
             #'opciones': _('Opciones'),
-            'lista': [
-                'nombre' 
-            ],
+            #'lista': [
+            #    'nombre' 
+            #],
         },
         'opciones': DISPLAYS['opciones'],
     }

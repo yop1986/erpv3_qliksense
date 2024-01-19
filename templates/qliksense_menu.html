@@ -1,8 +1,4 @@
-{% extends 'base.html' %}
 {% load static i18n %}
-
-<!-- Navbar -->
-{% block navbar %}
 
 {% if user.is_authenticated %}
 <li class="nav-item dropdown">
@@ -29,7 +25,3 @@
   </ul>
 </li>
 {% endif %}
-{% endblock %}
-<!-- Navbar -->
-
-
