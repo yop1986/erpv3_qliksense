@@ -164,7 +164,7 @@ class Stream (models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombre      = models.CharField(_('Nombre'), max_length = 120, unique = True)
     
-    history     = HistoricalRecords(excluded_fields=['qlik_id'], user_model=settings.AUTH_USER_MODEL)
+    history     = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)
 
     def __str__(self):
         return f'{self.nombre}'
@@ -193,7 +193,7 @@ class Modelo(models.Model):
     descripcion = models.CharField(verbose_name=_('Descripción'), max_length=210, blank=True)
     stream  = models.ForeignKey(Stream, verbose_name=_('Stream'), on_delete=models.RESTRICT, related_name='modelo_stream')
 
-    history     = HistoricalRecords(excluded_fields=['qlik_id'], user_model=settings.AUTH_USER_MODEL)
+    history     = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)
 
     def __str__(self):
         return self.nombre
