@@ -35,7 +35,7 @@ siguiente informacion:
 
 Posterior a esta configuracion es necesario agregar las urls al proyecto base __< Base >/urls.py__
 
-    path('qlik', include('qliksense.urls')),
+    path('qlik/', include('qliksense.urls')),
 
 #### Configuracion
 
