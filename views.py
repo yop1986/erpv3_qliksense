@@ -429,7 +429,7 @@ class UsuarioListView(PersonalListView, QlikContextMixin):
             'opciones': _('Opciones'),
             # Lista de campos que se deben mostrar en la tabla
             'lista': [
-                'nombre', 'extension', 'correo', 'area_tipo', 
+                'area_tipo', 'nombre', 'extension', 'correo', 
             ],
         },
         'opciones': DISPLAYS['opciones'],
