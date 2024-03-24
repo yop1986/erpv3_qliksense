@@ -36,8 +36,11 @@ DISPLAYS = {
     },
     'opciones': {
         'detail': _('Ver'),
+        'detail_img': 'qs_detail.png',
         'update': _('Editar'),
+        'update_img': 'qs_update.png',
         'delete': _('Eliminar'),
+        'delete_img': 'qs_delete.png',
     },
     'tabla_vacia': _('No hay elementos para mostrar'),
 }
@@ -133,6 +136,15 @@ class LicenciasListView(PersonalListView, QlikContextMixin):
         },
     }
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['permisos'] = {
+            'create': self.request.user.has_perm('qliksense.add_tipolicencia'),
+            'update': self.request.user.has_perm('qliksense.change_tipolicencia'),
+            'delete': self.request.user.has_perm('qliksense.delete_tipolicencia'),
+        }
+        return context
+
 class LicenciasCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_tipolicencia'
     template_name = 'template/forms.html'
@@ -164,42 +176,53 @@ class LicenciasDetailView(PersonalDetailView, QlikContextMixin):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        context['permisos'] = {
+            'create': self.request.user.has_perm('qliksense.add_tipolicencia'),
+            'update': self.request.user.has_perm('qliksense.change_tipolicencia'),
+            'delete': self.request.user.has_perm('qliksense.delete_tipolicencia'),
+        }
         context['campos_adicionales'] = [ 
             {'display': _('Licencias asignadas'), 'valor': self.object.licencias_asignadas()},
             {'display': _('Licencias pendientes'), 'valor': self.object.licencias_no_asignadas()},
         ]
-        context['forms'] = [
-            {
-                'modal':    'area_tipolicencia', 
-                'action':   reverse_lazy('qliksense:create_areatipo')+f'?next='+self.object.url_detail(),
-                'display':  _('Asignación de licencias'),
-                'link_img': 'qs_areatipolicencia.png',
-                'form':     Area_TipoLicencia_ModelForm('tipo', instance=Area_TipoLicencia(tipo=self.object)),
-                'opciones': DISPLAYS['forms'],
-            },
-        ]
-        context['tables'] = [
-            {
-                'title':        _('Areas'),
-                'enumerar':     1,
-                'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object).order_by('area__nombre'),
-                'campos':       ['area', 'cantidad'],
-                'opciones':     _('Opciones'),
-                'campos_extra': [
-                    {
-                        'nombre':   _('Asignadas'), #display
-                        # valor, constante o funcion 
-                        'funcion': 'licencias_asignadas',  
+        if self.request.user.has_perm('qliksense.add_area_tipolicencia'):
+            context['forms'] = [
+                {
+                    'modal':    'area_tipolicencia', 
+                    'action':   reverse_lazy('qliksense:create_areatipo')+f'?next='+self.object.url_detail(),
+                    'display':  _('Asignación de licencias'),
+                    'link_img': 'qs_areatipolicencia.png',
+                    'form':     Area_TipoLicencia_ModelForm('tipo', instance=Area_TipoLicencia(tipo=self.object)),
+                    'opciones': DISPLAYS['forms'],
+                },
+            ]
+        if self.request.user.has_perm('qliksense.view_area'):   
+            context['tables'] = [
+                {
+                    'title':        _('Areas'),
+                    'enumerar':     1,
+                    'object_list':  Area_TipoLicencia.objects.filter(tipo=self.object).order_by('area__nombre'),
+                    'campos':       ['area', 'cantidad'],
+                    'opciones':     _('Opciones'),
+                    'campos_extra': [
+                        {
+                            'nombre':   _('Asignadas'), #display
+                            # valor, constante o funcion 
+                            'funcion': 'licencias_asignadas',  
+                        },
+                        {
+                            'nombre':   _('Disponibles'), #display
+                            # valor, constante o funcion 
+                            'funcion': 'licencias_disponibles',  
+                        },
+                    ],
+                    'permisos': {
+                        'update':   self.request.user.has_perm('qliksense.change_area_tipolicencia'),
+                        'delete':   self.request.user.has_perm('qliksense.delete_area_tipolicencia'),
                     },
-                    {
-                        'nombre':   _('Disponibles'), #display
-                        # valor, constante o funcion 
-                        'funcion': 'licencias_disponibles',  
-                    },
-                ],
-                'next':         self.object.url_detail(),
-            },
-        ]
+                    'next':         self.object.url_detail(),
+                },
+            ]
         return context
 
 class LicenciasUpdateView(PersonalUpdateView, QlikContextMixin):
@@ -256,6 +279,15 @@ class AreaListView(PersonalListView, QlikContextMixin):
         },
     }
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['permisos'] = {
+            'create': self.request.user.has_perm('qliksense.add_area'),
+            'update': self.request.user.has_perm('qliksense.change_area'),
+            'delete': self.request.user.has_perm('qliksense.delete_area'),
+        }
+        return context
+
 class AreaCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_area'
     template_name = 'template/forms.html'
@@ -288,39 +320,50 @@ class AreaDetailView(PersonalDetailView, QlikContextMixin):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['forms'] = [
-            {
-                'modal':    'area_tipolicencia', 
-                'action':   reverse_lazy('qliksense:create_areatipo')+f'?next='+self.object.url_detail(),
-                'display':  _('Asignación de licencias'),
-                'link_img': 'qs_areatipolicencia.png',
-                'form':     Area_TipoLicencia_ModelForm('area', instance=Area_TipoLicencia(area=self.object)),
-                'opciones': DISPLAYS['forms'],
-            },
-        ]
-        context['tables'] = [
-            {
-                'title':        _('Licencias'),
-                'enumerar':     1,
-                'object_list':  Area_TipoLicencia.objects.filter(area=self.object).order_by('tipo__descripcion'),
-                'campos':       ['tipo', 'cantidad'],
-                'campos_extra': [
-                    {
-                        'nombre':   _('Asignadas'), #display
-                        # valor, constante o funcion 
-                        'funcion': 'licencias_asignadas',  
+        context['permisos'] = {
+            'create': self.request.user.has_perm('qliksense.add_area'),
+            'update': self.request.user.has_perm('qliksense.change_area'),
+            'delete': self.request.user.has_perm('qliksense.delete_area'),
+        }
+        if self.request.user.has_perm('qliksense.add_area_tipolicencia'):
+            context['forms'] = [
+                {
+                    'modal':    'area_tipolicencia', 
+                    'action':   reverse_lazy('qliksense:create_areatipo')+f'?next='+self.object.url_detail(),
+                    'display':  _('Asignación de licencias'),
+                    'link_img': 'qs_areatipolicencia.png',
+                    'form':     Area_TipoLicencia_ModelForm('area', instance=Area_TipoLicencia(area=self.object)),
+                    'opciones': DISPLAYS['forms'],
+                },
+            ]
+        if self.request.user.has_perm('qliksense.view_tipolicencia'):
+            context['tables'] = [
+                {
+                    'title':        _('Licencias'),
+                    'enumerar':     1,
+                    'object_list':  Area_TipoLicencia.objects.filter(area=self.object).order_by('tipo__descripcion'),
+                    'campos':       ['tipo', 'cantidad'],
+                    'campos_extra': [
+                        {
+                            'nombre':   _('Asignadas'), #display
+                            # valor, constante o funcion 
+                            'funcion': 'licencias_asignadas',  
+                        },
+                        {
+                            'nombre':   _('Disponibles'), #display
+                            # valor, constante o funcion 
+                            'funcion': 'licencias_disponibles',  
+                        },
+                    ],
+                    'permisos': {
+                        'update':   self.request.user.has_perm('qliksense.change_area_tipolicencia'),
+                        'delete':   self.request.user.has_perm('qliksense.delete_area_tipolicencia'),
                     },
-                    {
-                        'nombre':   _('Disponibles'), #display
-                        # valor, constante o funcion 
-                        'funcion': 'licencias_disponibles',  
-                    },
-                ],
-                'opciones':     _('Opciones'),
-                #Si tiene next, redirecciona a esa pagina
-                'next':         self.object.url_detail(),
-            },
-        ]
+                    'opciones':     _('Opciones'),
+                    #Si tiene next, redirecciona a esa pagina
+                    'next':         self.object.url_detail(),
+                },
+            ]
         return context
 
 class AreaUpdateView(PersonalUpdateView, QlikContextMixin):
@@ -442,6 +485,15 @@ class UsuarioListView(PersonalListView, QlikContextMixin):
         },
     }
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['permisos'] = {
+            'create': self.request.user.has_perm('qliksense.add_usuario'),
+            'update': self.request.user.has_perm('qliksense.change_usuario'),
+            'delete': self.request.user.has_perm('qliksense.delete_usuario'),
+        }
+        return context
+
 class UsuarioCreateView(PersonalCreateView, QlikContextMixin):
     permission_required = 'qliksense.add_usuario'
     template_name = 'template/forms.html'
@@ -530,21 +582,25 @@ class StreamDetailView(PersonalDetailView, QlikContextMixin):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
-        context['tables'] = [
-            {
-                'title':        _('Modelos'),
-                'enumerar':     1,
-                'object_list':  Modelo.objects.filter(stream=self.object).order_by('nombre'),
-                'campos':       ['nombre'],
-                'opciones':     _('Opciones'),
-            },
-        ]
+        if self.request.user.has_perm('qliksense.view_modelo'): 
+            context['tables'] = [
+                {
+                    'title':        _('Modelos'),
+                    'enumerar':     1,
+                    'object_list':  Modelo.objects.filter(stream=self.object).order_by('nombre'),
+                    'campos':       ['nombre'],
+                    'permisos': {
+                        'detail':   self.request.user.has_perm('qliksense.view_modelo'),
+                    },
+                    'opciones':     _('Opciones'),
+                },
+            ]
 
         return context
 
 def refresh_all(request):
     if request.user.is_authenticated:
-        qs_ws = QSWebSockets(debug=False)
+        qs_ws = QSWebSockets()
         stream_refresh(request, qs_ws)
         model_refresh(request, qs_ws)
         return redirect(reverse_lazy('qliksense:list_stream'))
@@ -625,7 +681,7 @@ class ModelDetailView(PersonalDetailView, QlikContextMixin):
             {
                 'title':        _('Campos'),
                 'enumerar':     1,
-                'object_list':  self.campo_valores(self.object), #Modelo.objects.filter(stream=self.object).order_by('nombre'),
+                'object_list':  self.campo_valores(self.object),
                 'campos':       ['Nombre', 'Tipo'],
                 'opciones':     _('Opciones'),
             },
