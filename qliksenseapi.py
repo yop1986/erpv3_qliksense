@@ -114,7 +114,7 @@ class QSWebSockets():
         ssl.match_hostname  = lambda cert, hostname: True
         conf                = Configuracion()
 
-        self.debug          = debug
+        self.debug          = conf.get_informacion('qliksense', 'qs_socket_debug')
         self.archivo        = ValidaArchivos(pPath)
         
         # Parametros de conexión

@@ -44,6 +44,7 @@ a esta aplicación y sincronizar la información.
 
     [qliksense]
     # Se utiliza para realizar la conexión a los streams y modelos de qliksense
+    qs_socket_debug = False
     qs_webproxy     = 
 
     # Se utiliz para generar las urls de conexion a los web_socket

@@ -6,16 +6,20 @@
     {% translate "Licenciamiento" %}
   </a>
   <ul class="dropdown-menu">
+    {% if perms.qliksense.view_tipolicencia %}
     <li><a class="dropdown-item" href="{% url 'qliksense:list_licencia' %}">{% translate "Tipo de licencias" %}</a></li>
-    <li><a class="dropdown-item" href="{% url 'qliksense:create_licencia' %}">{% translate "Nuevo tipo de licencias" %}</a></li>
     <li><hr class="dropdown-divider"></li>
+    {% endif %}
+    {% if perms.qliksense.view_area %}
     <li><a class="dropdown-item" href="{% url 'qliksense:list_area' %}">{% translate "Áreas responsables" %}</a></li>
-    <li><a class="dropdown-item" href="{% url 'qliksense:create_area' %}">{% translate "Nueva Área" %}</a></li>
     <li><hr class="dropdown-divider"></li>
+    {% endif %}
+    {% if perms.qliksense.view_usuario %}
     <li><a class="dropdown-item" href="{% url 'qliksense:list_usuario' %}">{% translate "Listar Usuarios" %}</a></li>
-    <li><a class="dropdown-item" href="{% url 'qliksense:create_usuario' %}">{% translate "Nuevo Usuario" %}</a></li>
+    {% endif %}
   </ul>
 </li>
+  {% if perms.qliksense.view_stream %}
 <li class="nav-item dropdown">
   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     {% translate "Qlik Sense" %}
@@ -24,4 +28,5 @@
     <li><a class="dropdown-item" href="{% url 'qliksense:list_stream' %}">Listar Streams</a></li>
   </ul>
 </li>
+  {% endif %}
 {% endif %}
