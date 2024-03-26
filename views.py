@@ -599,7 +599,7 @@ class StreamDetailView(PersonalDetailView, QlikContextMixin):
         return context
 
 def refresh_all(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.has_perm('qliksense.add_stream'):
         qs_ws = QSWebSockets()
         stream_refresh(request, qs_ws)
         model_refresh(request, qs_ws)
